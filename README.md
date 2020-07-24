@@ -21,7 +21,7 @@ JCLOCKEDIO_CHATWORK_ROOM_ID=your room id
 
 Execute clocked in/out on Jobcan.
 ```
-$ docker run \
+$ docker run --rm \
     -e "TZ=Asia/Tokyo" \
     -e "JCLOCKEDIO_JOBCAN_DEBUG=true" \
     -e "JCLOCKEDIO_CHATWORK_DEBUG=true" \
