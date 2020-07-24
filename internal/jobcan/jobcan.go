@@ -85,10 +85,10 @@ func ClockedInOut() Result {
 		log.Println("DEBUG: It's not clocked in/out because debug mode")
 	} else {
 		log.Println("Clocked in/out!")
-		// aditButtonElement := page.FindByID("adit-button-push")
-		// if err := aditButtonElement.Click(); err != nil {
-		// 	log.Fatalf("Failed to clocked in or out! (Failed to click adit button): %v", err)
-		// }
+		aditButtonElement := page.FindByID("adit-button-push")
+		if err := aditButtonElement.Click(); err != nil {
+			log.Fatalf("Failed to clocked in or out! (Failed to click adit button): %v", err)
+		}
 	}
 
 	// JsでHTMLが書き換わるまで待機
