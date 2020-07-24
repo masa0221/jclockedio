@@ -14,12 +14,13 @@ import (
 type Env struct {
 	APIToken string `required:"true" split_words:"true"`
 	RoomID   string `required:"true" split_words:"true"`
+	Debug    bool   `default:false`
 }
 
 func Send(message string) {
 	// 環境変数
 	var env Env
-	err := envconfig.Process("chatwork", &env)
+	err := envconfig.Process("jclockedio_chatwork", &env)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -41,12 +42,18 @@ func Send(message string) {
 	r.Header.Add("X-ChatWorkToken", env.APIToken)
 	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-	resp, _ := client.Do(r)
+	if env.Debug {
+		log.Println("DEBUG: It's not send to Chatwork because debug mode")
+	} else {
+		log.Println("Send to Chatwork")
 
-	defer resp.Body.Close()
-	contents, _ := ioutil.ReadAll(resp.Body)
+		resp, _ := client.Do(r)
 
-	log.Println(resp.Status)
-	log.Printf("result: %s\n", contents)
+		defer resp.Body.Close()
+		contents, _ := ioutil.ReadAll(resp.Body)
+
+		log.Println(resp.Status)
+		log.Printf("result: %s\n", contents)
+	}
 	log.Println(urlStr)
 }

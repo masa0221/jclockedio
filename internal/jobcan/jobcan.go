@@ -11,6 +11,7 @@ import (
 type Env struct {
 	Username string `required:"true"`
 	Password string `required:"true"`
+	Debug    bool   `default:false`
 }
 
 type Result struct {
@@ -22,7 +23,7 @@ type Result struct {
 func ClockedInOut() Result {
 	// 環境変数
 	var env Env
-	err := envconfig.Process("jobcan", &env)
+	err := envconfig.Process("jclockedio_jobcan", &env)
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -80,10 +81,15 @@ func ClockedInOut() Result {
 	}
 
 	// 打刻
-	// aditButtonElement := page.FindByID("adit-button-push")
-	// if err := aditButtonElement.Click(); err != nil {
-	// 	log.Fatalf("Failed to clocked in or out! (Failed to click adit button): %v", err)
-	// }
+	if env.Debug {
+		log.Println("DEBUG: It's not clocked in/out because debug mode")
+	} else {
+		log.Println("Clocked in/out!")
+		// aditButtonElement := page.FindByID("adit-button-push")
+		// if err := aditButtonElement.Click(); err != nil {
+		// 	log.Fatalf("Failed to clocked in or out! (Failed to click adit button): %v", err)
+		// }
+	}
 
 	// JsでHTMLが書き換わるまで待機
 	time.Sleep(1 * time.Second)

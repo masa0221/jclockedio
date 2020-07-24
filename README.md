@@ -13,23 +13,26 @@ Set your environments, if you think requirement it.
 
 .zprofile
 ```
-JOBCAN_USERNAME="Your Jobcan username"
-JOBCAN_PASSWORD="Your Jobcan password"
-CHATWORK_API_TOKEN="Your Chatwork api token"
-CHATWORK_ROOM_ID=your room id
+JCLOCKEDIO_JOBCAN_USERNAME="Your Jobcan username"
+JCLOCKEDIO_JOBCAN_PASSWORD="Your Jobcan password"
+JCLOCKEDIO_CHATWORK_API_TOKEN="Your Chatwork api token"
+JCLOCKEDIO_CHATWORK_ROOM_ID=your room id
 ```
 
 Execute clocked in/out on Jobcan.
 ```
 $ docker run \
     -e "TZ=Asia/Tokyo" \
-    -e "JOBCAN_USERNAME=${JOBCAN_USERNAME}" \
-    -e "JOBCAN_PASSWORD=${JOBCAN_PASSWORD}" \
-    -e "CHATWORK_API_TOKEN=${CHATWORK_API_TOKEN}" \
-    -e "CHATWORK_ROOM_ID=${CHATWORK_ROOM_ID}" \
+    -e "JCLOCKEDIO_JOBCAN_DEBUG=true" \
+    -e "JCLOCKEDIO_CHATWORK_DEBUG=true" \
+    -e "JCLOCKEDIO_JOBCAN_USERNAME=${JCLOCKEDIO_JOBCAN_USERNAME}" \
+    -e "JCLOCKEDIO_JOBCAN_PASSWORD=${JCLOCKEDIO_JOBCAN_PASSWORD}" \
+    -e "JCLOCKEDIO_CHATWORK_API_TOKEN=${JCLOCKEDIO_CHATWORK_API_TOKEN}" \
+    -e "JCLOCKEDIO_CHATWORK_ROOM_ID=${JCLOCKEDIO_CHATWORK_ROOM_ID}" \
     jclockedio
 ```
 You can setting your credentials and room id for sending to chatwork.
+IF YOU WANT TO USE SERIOUSLY, THEN REMOVE DEBUG ENVIRONMENT PARAMETERS `JCLOCKEDIO_JOBCAN_DEBUG` and `JCLOCKEDIO_CHATWORK_DEBUG`.
 
 
 ## How to execute edited source code
