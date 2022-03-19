@@ -22,10 +22,33 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"fmt"
 	"os"
 
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var cfgFile string
+
+var config Config
+
+type JobcanConfig struct {
+	User  string `mapstructure:"username"`
+	Pass  string `mapstructure:"password"`
+	Debug bool   `mapstructure:"debug"`
+}
+
+type ChatworkConfig struct {
+	ApiToken string `mapstructure:"api_token"`
+	Debug    bool   `mapstructure:"debug"`
+}
+
+type Config struct {
+	Jobcan   JobcanConfig   `mapstructure:"jobcan"`
+	Chatwork ChatworkConfig `mapstructure:"chatwork"`
+}
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -35,7 +58,9 @@ var rootCmd = &cobra.Command{
 "jclockedio" means Jobcan clocked in/out.`,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Run: func(cmd *cobra.Command, args []string) {
+		fmt.Println(config)
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -52,9 +77,42 @@ func init() {
 	// Cobra supports persistent flags, which, if defined here,
 	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jclockedio.yaml)")
+	cobra.OnInitialize(initConfig)
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jclockedio.toml)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
 	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+}
+
+func initConfig() {
+	viper.SetConfigType("toml")
+
+	// Don't forget to read config either from cfgFile or from home directory!
+	if cfgFile != "" {
+		// Use config file from the flag.
+		viper.SetConfigFile(cfgFile)
+	} else {
+		// Find home directory.
+		home, err := homedir.Dir()
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Search config in home directory with name ".jclockedio.toml" (without extension).
+		viper.AddConfigPath(home)
+		// viper.SetConfigName(".jclockedio.toml")
+		viper.SetConfigName(".jclockedio.toml")
+	}
+
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Println("Can't read config:", err)
+		os.Exit(1)
+	}
+
+	if err := viper.Unmarshal(&config); err != nil {
+		fmt.Println("Can't unmarshal config:", err)
+		os.Exit(1)
+	}
 }
