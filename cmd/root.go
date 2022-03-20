@@ -35,19 +35,19 @@ var cfgFile string
 var config Config
 
 type JobcanConfig struct {
-	User  string `mapstructure:"username"`
-	Pass  string `mapstructure:"password"`
-	Debug bool   `mapstructure:"debug"`
+	Email    string `toml:"email"`
+	Password string `toml:"password"`
+	Debug    bool   `toml:"debug"`
 }
 
 type ChatworkConfig struct {
-	ApiToken string `mapstructure:"api_token"`
-	Debug    bool   `mapstructure:"debug"`
+	ApiToken string `toml:"apitoken"`
+	Debug    bool   `toml:"debug"`
 }
 
 type Config struct {
-	Jobcan   JobcanConfig   `mapstructure:"jobcan"`
-	Chatwork ChatworkConfig `mapstructure:"chatwork"`
+	Jobcan   JobcanConfig   `toml:"jobcan"`
+	Chatwork ChatworkConfig `toml:"chatwork"`
 }
 
 // rootCmd represents the base command when called without any subcommands
@@ -78,7 +78,7 @@ func init() {
 	// will be global for your application.
 
 	cobra.OnInitialize(initConfig)
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jclockedio.toml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jclockedio)")
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
@@ -103,12 +103,13 @@ func initConfig() {
 		// Search config in home directory with name ".jclockedio.toml" (without extension).
 		viper.AddConfigPath(home)
 		// viper.SetConfigName(".jclockedio.toml")
-		viper.SetConfigName(".jclockedio.toml")
+		viper.SetConfigName(".jclockedio")
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Can't read config:", err)
-		os.Exit(1)
+		// fmt.Println("Config file is not found.\nPlease run `\033[0;31mjclockedio configure\033[0;39m` command.\n")
+		configInit()
+		os.Exit(0)
 	}
 
 	if err := viper.Unmarshal(&config); err != nil {
