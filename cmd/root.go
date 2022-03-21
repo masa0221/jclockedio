@@ -37,12 +37,12 @@ var config Config
 type JobcanConfig struct {
 	Email    string `toml:"email"`
 	Password string `toml:"password"`
-	Debug    bool   `toml:"debug"`
 }
 
 type ChatworkConfig struct {
+	Send     bool   `toml:"send"`
 	ApiToken string `toml:"apitoken"`
-	Debug    bool   `toml:"debug"`
+	RoomId   string `toml:"roomid"`
 }
 
 type Config struct {
@@ -100,14 +100,13 @@ func initConfig() {
 			os.Exit(1)
 		}
 
-		// Search config in home directory with name ".jclockedio.toml" (without extension).
+		// Search config in home directory with name ".jclockedio" (without extension).
 		viper.AddConfigPath(home)
-		// viper.SetConfigName(".jclockedio.toml")
 		viper.SetConfigName(".jclockedio")
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
-		// fmt.Println("Config file is not found.\nPlease run `\033[0;31mjclockedio configure\033[0;39m` command.\n")
+		fmt.Println("Config file is not found.\nIt be execute configure process.\n")
 		configInit()
 		os.Exit(0)
 	}

@@ -45,23 +45,58 @@ func init() {
 }
 
 func configInit() {
-	config.Jobcan.Email = readInput("Jobcan E-mail", config.Jobcan.Email, false)
-	config.Jobcan.Password = readInput("Jobcan Password", config.Jobcan.Password, true)
-	config.Chatwork.ApiToken = readInput("Chatwork API Token", config.Chatwork.ApiToken, true)
+	maskType := newDataMaskType()
+	config.Jobcan.Email = readInput("Jobcan E-mail", config.Jobcan.Email, maskType.Partial)
+	config.Jobcan.Password = readInput("Jobcan Password", config.Jobcan.Password, maskType.Password)
+
+	if readInputYN("Do you send to Chatwork?") {
+		config.Chatwork.Send = true
+		config.Chatwork.ApiToken = readInput("Chatwork API Token", config.Chatwork.ApiToken, maskType.Partial)
+		config.Chatwork.RoomId = readInput("Chatwork room_id", config.Chatwork.RoomId, maskType.None)
+	} else {
+		config.Chatwork.Send = false
+	}
 
 	filepath := os.ExpandEnv("$HOME") + "/.jclockedio"
 	saveConfig(filepath, config)
 	fmt.Printf("\nCreated!(%v)\nEnjoy your work🌸\n", filepath)
 }
 
-func readInput(label string, settingValue string, isMask bool) string {
+type DataMaskType struct {
+	Password string
+	Partial  string
+	None     string
+}
+
+func newDataMaskType() DataMaskType {
+	return DataMaskType{"password", "partial", "none"}
+}
+
+func readInputYN(label string) bool {
+	fmt.Printf("%v [y]es/[n]o: ", label)
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Scan()
+	input := scanner.Text()
+
+	answer := false
+	if input != "" && (input[0:1] == "Y" || input[0:1] == "y") {
+		answer = true
+	}
+
+	return answer
+}
+
+func readInput(label string, settingValue string, maskType string) string {
 	msg := ""
 	if settingValue == "" {
 		msg = fmt.Sprintf("%v: ", label)
 	} else {
 		outputValue := ""
-		if isMask {
-			outputValue = settingValue[1:2] + strings.Repeat("*", len(settingValue)) + settingValue[len(settingValue)-1:len(settingValue)]
+		dataMaskType := newDataMaskType()
+		if maskType == dataMaskType.Password {
+			outputValue = strings.Repeat("*", len(settingValue))
+		} else if maskType == dataMaskType.Partial {
+			outputValue = settingValue[0:1] + strings.Repeat("*", len(settingValue)-2) + settingValue[len(settingValue)-1:]
 		} else {
 			outputValue = settingValue
 		}
