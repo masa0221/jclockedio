@@ -73,7 +73,7 @@ func newDataMaskType() DataMaskType {
 }
 
 func readInputYN(label string) bool {
-	fmt.Printf("%v [y]es/[n]o: ", label)
+	fmt.Printf("%v (y)es/(n)o: ", label)
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
 	input := scanner.Text()
@@ -86,26 +86,37 @@ func readInputYN(label string) bool {
 	return answer
 }
 
-func readInput(label string, settingValue string, maskType string) string {
+func readInput(label string, defaultValue string, maskType string) string {
 	msg := ""
-	if settingValue == "" {
+	if defaultValue == "" {
 		msg = fmt.Sprintf("%v: ", label)
 	} else {
 		outputValue := ""
 		dataMaskType := newDataMaskType()
 		if maskType == dataMaskType.Password {
-			outputValue = strings.Repeat("*", len(settingValue))
+			outputValue = strings.Repeat("*", len(defaultValue))
 		} else if maskType == dataMaskType.Partial {
-			outputValue = settingValue[0:1] + strings.Repeat("*", len(settingValue)-2) + settingValue[len(settingValue)-1:]
+			strLength := len(defaultValue) - 2
+			if strLength <= 0 {
+				outputValue = strings.Repeat("*", len(defaultValue))
+			} else {
+				outputValue = defaultValue[0:1] + strings.Repeat("*", strLength) + defaultValue[strLength+1:]
+			}
 		} else {
-			outputValue = settingValue
+			outputValue = defaultValue
 		}
 		msg = fmt.Sprintf("%v [%v]: ", label, outputValue)
 	}
 	fmt.Printf(msg)
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Scan()
-	return scanner.Text()
+
+	input := scanner.Text()
+	if input == "" {
+		input = defaultValue
+	}
+
+	return input
 }
 
 func saveConfig(filepath string, config Config) {
