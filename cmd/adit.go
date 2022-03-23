@@ -22,6 +22,16 @@ This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("adit called")
+		noAdit, err := cmd.Flags().GetBool("no-adit")
+		if err != nil {
+			fmt.Println("Can't read no-adit flag: ", err)
+		}
+
+		if noAdit {
+			fmt.Println("debug")
+		} else {
+			fmt.Println("prod")
+		}
 	},
 }
 
@@ -36,5 +46,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// aditCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	aditCmd.Flags().BoolP("no-adit", "n", false, "It login to Jobcan using by configure, but no adit.")
 }
