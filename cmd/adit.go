@@ -7,6 +7,8 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/masa0221/jclockedio/internal/chatwork"
+	"github.com/masa0221/jclockedio/internal/jobcan"
 	"github.com/spf13/cobra"
 )
 
@@ -30,7 +32,12 @@ to quickly create a Cobra application.`,
 		if noAdit {
 			fmt.Println("debug")
 		} else {
+			jobcan.Adit()
 			fmt.Println("prod")
+		}
+
+		if config.Chatwork.Send {
+			chatwork.Send()
 		}
 	},
 }
@@ -46,5 +53,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	aditCmd.Flags().BoolP("no-adit", "n", false, "It login to Jobcan using by configure, but no adit.")
+	aditCmd.Flags().BoolP("no-adit", "n", false, "It login to Jobcan using by configure, but no adit.(The adit means to push button of clocked in/out)")
 }
