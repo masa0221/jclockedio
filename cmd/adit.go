@@ -37,7 +37,13 @@ to quickly create a Cobra application.`,
 		}
 
 		if config.Chatwork.Send {
-			chatwork.Send()
+			chatworkClient := chatwork.New(config.Chatwork.ApiToken)
+			messageId, err := chatworkClient.SendMessage("hoge", config.Chatwork.RoomId)
+			if err != nil {
+				fmt.Println("Failed to send to Chatwork: ", err)
+			} else {
+				fmt.Println("messageId: ", messageId)
+			}
 		}
 	},
 }
