@@ -28,6 +28,10 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			fmt.Println("Can't read no-adit flag: ", err)
 		}
+		verbose, err := cmd.Flags().GetBool("verbose")
+		if err != nil {
+			fmt.Println("Can't read verbose flag: ", err)
+		}
 
 		if noAdit {
 			fmt.Println("debug")
@@ -38,6 +42,7 @@ to quickly create a Cobra application.`,
 
 		if config.Chatwork.Send {
 			chatworkClient := chatwork.New(config.Chatwork.ApiToken)
+			chatworkClient.Verbose = verbose
 			messageId, err := chatworkClient.SendMessage("hoge", config.Chatwork.RoomId)
 			if err != nil {
 				fmt.Println("Failed to send to Chatwork: ", err)
