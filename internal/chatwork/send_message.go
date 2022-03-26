@@ -56,3 +56,7 @@ func (c *chatworkClient) SendMessage(message string, toRoomId string) (string, e
 
 	return result.MessageId, nil
 }
+
+func GenerateChatworkMessageUrl(chatworkId string, roomId string) string {
+	return fmt.Sprintf("https://www.chatwork.com/#!rid%v-%v", roomId, chatworkId)
+}
