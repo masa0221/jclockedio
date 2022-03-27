@@ -73,16 +73,11 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	cobra.OnInitialize(initConfig)
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jclockedio)")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Verbose mode. Output details of process")
+	rootCmd.PersistentFlags().Bool("debug", false, "Debug mode. This option is for developer")
 }
 
 func initConfig() {

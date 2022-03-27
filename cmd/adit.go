@@ -32,13 +32,16 @@ to quickly create a Cobra application.`,
 		if err != nil {
 			fmt.Println("Can't read verbose flag: ", err)
 		}
-
-		if noAdit {
-			fmt.Println("debug")
-		} else {
-			jobcan.Adit()
-			fmt.Println("prod")
+		debug, err := cmd.Flags().GetBool("debug")
+		if err != nil {
+			fmt.Println("Can't read debug flag: ", err)
 		}
+
+		jobcanClient := jobcan.New(config.Jobcan.Email, config.Jobcan.Password)
+		jobcanClient.Verbose = verbose
+		jobcanClient.NoAdit = noAdit
+		jobcanClient.Debug = debug
+		jobcanClient.Adit()
 
 		if config.Chatwork.Send {
 			chatworkClient := chatwork.New(config.Chatwork.ApiToken)
@@ -64,5 +67,5 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	aditCmd.Flags().BoolP("no-adit", "n", false, "It login to Jobcan using by configure, but no adit.(The adit means to push button of clocked in/out)")
+	aditCmd.Flags().Bool("no-adit", false, "It login to Jobcan using by configure, but no adit.(The adit means to push button of clocked in/out)")
 }
