@@ -9,14 +9,14 @@ import (
 )
 
 type chatworkClient struct {
-	baseEndpoint string
-	apiToken     string
-	Verbose      bool
+	apiToken string
+	BaseUrl  string
+	Verbose  bool
 }
 
 func New(ApiToken string) chatworkClient {
 	client := chatworkClient{}
-	client.baseEndpoint = "https://api.chatwork.com/v2"
+	client.BaseUrl = "https://api.chatwork.com"
 	client.apiToken = ApiToken
 
 	return client
@@ -26,6 +26,10 @@ type postMessageResult struct {
 	MessageId string `json:"message_id"`
 }
 
+func (c *chatworkClient) generateEndpointUrl() string {
+	return fmt.Sprintf("%s/v2", c.BaseUrl)
+}
+
 func (c *chatworkClient) outputVerboseMessage(message string) {
 	if c.Verbose {
 		log.Println("[chatwork]", message)
@@ -33,7 +37,7 @@ func (c *chatworkClient) outputVerboseMessage(message string) {
 }
 
 func (c *chatworkClient) SendMessage(message string, toRoomId string) (string, error) {
-	url := fmt.Sprintf("%v/rooms/%v/messages?body=%v", c.baseEndpoint, toRoomId, message)
+	url := fmt.Sprintf("%v/rooms/%v/messages?body=%v", c.generateEndpointUrl(), toRoomId, message)
 
 	req, err := http.NewRequest("POST", url, nil)
 	c.outputVerboseMessage(fmt.Sprintf("Create NewRequest. URL: %v err: %v", url, err))
