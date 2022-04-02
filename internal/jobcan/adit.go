@@ -10,9 +10,9 @@ import (
 type jobcanClient struct {
 	email    string
 	password string
-	Host     string
 	NoAdit   bool
 	Verbose  bool
+	BaseUrl  string
 }
 
 type aditResult struct {
@@ -24,8 +24,8 @@ type aditResult struct {
 func New(email string, password string) *jobcanClient {
 	client := jobcanClient{}
 	// TODO: Remove localhost and uncomment below
-	// client.Host = "ssl.jobcan.jp"
-	client.Host = "localhost"
+	// client.Host = "https://ssl.jobcan.jp"
+	client.BaseUrl = "http://localhost"
 	client.email = email
 	client.password = password
 
@@ -38,13 +38,16 @@ func (c *jobcanClient) outputVerboseMessage(message string) {
 	}
 }
 
+func (c *jobcanClient) generateLoginUrl() string {
+	return fmt.Sprintf("%s/jbcoauth/login", c.BaseUrl)
+}
+
 func (c *jobcanClient) Adit() aditResult {
 	webBrowser := c.openWebBrowser()
 	defer webBrowser.closeWebBrowser()
 	webBrowser.Verbose = c.Verbose
 
-	loginUrl := fmt.Sprintf("https://%s/jbcoauth/login", c.Host)
-	webBrowser.login(loginUrl, c.email, c.password)
+	webBrowser.login(c.generateLoginUrl(), c.email, c.password)
 
 	return webBrowser.adit(c.NoAdit)
 }

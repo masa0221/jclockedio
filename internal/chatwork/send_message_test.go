@@ -22,12 +22,12 @@ func TestSendMessage(t *testing.T) {
 		}
 		gotPath := r.URL.Path
 		if gotPath != wantPath {
-			t.Logf("want %v, got %v", wantPath, gotPath)
+			t.Errorf("want %v, got %v", wantPath, gotPath)
 		}
 
 		gotApiToken := r.Header.Get("X-ChatWorkToken")
 		if gotApiToken != wantApiToken {
-			t.Logf("want %v, got %v", wantApiToken, gotApiToken)
+			t.Errorf("want %v, got %v", wantApiToken, gotApiToken)
 		}
 
 		if err := r.ParseForm(); err != nil {
@@ -44,10 +44,10 @@ func TestSendMessage(t *testing.T) {
 	chatworkClient.BaseUrl = ts.URL
 	gotMessageId, err := chatworkClient.SendMessage(wantMessage, wantRoomId)
 	if err != nil {
-		t.Logf("error occurred. err: %v", err)
+		t.Errorf("error occurred. err: %v", err)
 	}
 
 	if gotMessageId != wantMessageId {
-		t.Logf("want %v, got %v", wantMessageId, gotMessageId)
+		t.Errorf("want %v, got %v", wantMessageId, gotMessageId)
 	}
 }

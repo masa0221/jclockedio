@@ -27,32 +27,31 @@ to quickly create a Cobra application.`,
 		noAdit, err := cmd.Flags().GetBool("no-adit")
 		if err != nil {
 			fmt.Println("Can't read no-adit flag: ", err)
+			return
 		}
 		verbose, err := cmd.Flags().GetBool("verbose")
 		if err != nil {
 			fmt.Println("Can't read verbose flag: ", err)
-		}
-		debug, err := cmd.Flags().GetBool("debug")
-		if err != nil {
-			fmt.Println("Can't read debug flag: ", err)
+			return
 		}
 
+		// Clocked in/out
 		jobcanClient := jobcan.New(config.Jobcan.Email, config.Jobcan.Password)
 		jobcanClient.Verbose = verbose
 		jobcanClient.NoAdit = noAdit
-		if debug {
-			jobcanClient.Host = "localhost"
-		}
-		jobcanClient.Adit()
+		aditResult := jobcanClient.Adit()
 
+		// Output message
+		outputMessage := generateOutputMessage(aditResult.Clock, aditResult.BeforeWorkingStatus, aditResult.AfterWorkingStatus)
+		fmt.Println(outputMessage)
+
+		// Send to Chatwork
 		if config.Chatwork.Send {
 			chatworkClient := chatwork.New(config.Chatwork.ApiToken)
 			chatworkClient.Verbose = verbose
-			messageId, err := chatworkClient.SendMessage("hoge", config.Chatwork.RoomId)
+			_, err := chatworkClient.SendMessage(outputMessage, config.Chatwork.RoomId)
 			if err != nil {
-				fmt.Println("Failed to send to Chatwork: ", err)
-			} else {
-				fmt.Println("messageId: ", messageId)
+				fmt.Println("Failed to send to Chatwork")
 			}
 		}
 	},
@@ -70,4 +69,8 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	aditCmd.Flags().Bool("no-adit", false, "It login to Jobcan using by configure, but no adit.(The adit means to push button of clocked in/out)")
+}
+
+func generateOutputMessage(clock string, beforeStatus string, afterStatus string) string {
+	return fmt.Sprintf("clock: %s, %s -> %s", clock, beforeStatus, afterStatus)
 }

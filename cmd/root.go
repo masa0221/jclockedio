@@ -77,7 +77,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.jclockedio)")
 
 	rootCmd.PersistentFlags().BoolP("verbose", "v", false, "Verbose mode. Output details of process")
-	rootCmd.PersistentFlags().Bool("debug", false, "Debug mode. This option is for developer")
 }
 
 func initConfig() {

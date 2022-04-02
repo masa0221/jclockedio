@@ -62,11 +62,11 @@ func TestAdit(t *testing.T) {
 			fmt.Fprintln(w, jobcanAditPageHtml)
 		}
 	})
-	ts := httptest.NewTLSServer(h)
+	ts := httptest.NewServer(h)
 	defer ts.Close()
 
 	jobcanClient := jobcan.New(wantUserEmail, wantUserPassword)
-	jobcanClient.Host = "localhost"
+	jobcanClient.BaseUrl = ts.URL
 	jobcanClient.Verbose = true
 	// TODO: remove this
 	jobcanClient.NoAdit = true
