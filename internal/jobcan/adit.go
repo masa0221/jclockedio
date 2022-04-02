@@ -10,13 +10,22 @@ import (
 type jobcanClient struct {
 	email    string
 	password string
+	Host     string
 	NoAdit   bool
 	Verbose  bool
-	Debug    bool
+}
+
+type aditResult struct {
+	BeforeWorkingStatus string
+	AfterWorkingStatus  string
+	Clock               string
 }
 
 func New(email string, password string) *jobcanClient {
 	client := jobcanClient{}
+	// TODO: Remove localhost and uncomment below
+	// client.Host = "ssl.jobcan.jp"
+	client.Host = "localhost"
 	client.email = email
 	client.password = password
 
@@ -29,20 +38,15 @@ func (c *jobcanClient) outputVerboseMessage(message string) {
 	}
 }
 
-func (c *jobcanClient) Adit() {
+func (c *jobcanClient) Adit() aditResult {
 	webBrowser := c.openWebBrowser()
 	defer webBrowser.closeWebBrowser()
 	webBrowser.Verbose = c.Verbose
 
-	var loginUrl string
-	if c.Debug {
-		loginUrl = "http://127.0.0.1:8080"
-	} else {
-		loginUrl = "http://127.0.0.1:1111"
-		// loginUrl = "https://ssl.jobcan.jp/jbcoauth/login"
-	}
+	loginUrl := fmt.Sprintf("https://%s/jbcoauth/login", c.Host)
 	webBrowser.login(loginUrl, c.email, c.password)
-	webBrowser.adit(c.NoAdit)
+
+	return webBrowser.adit(c.NoAdit)
 }
 
 type webBrowser struct {
@@ -104,11 +108,21 @@ func (b *webBrowser) login(url string, email string, password string) {
 	b.outputVerboseMessage(fmt.Sprintf("Execute login process. err: %v", err))
 }
 
-func (b *webBrowser) adit(noAdit bool) {
+func (b *webBrowser) adit(noAdit bool) aditResult {
 	b.outputVerboseMessage(fmt.Sprintf("Adit process. noAdit: %v", noAdit))
+
+	aditResult := aditResult{}
 	if noAdit {
 		b.outputVerboseMessage("The adit was no execute")
+		aditResult.BeforeWorkingStatus = "Not attending work"
+		aditResult.AfterWorkingStatus = "Working"
+		aditResult.Clock = "12:23:34"
 	} else {
 		b.outputVerboseMessage("Execute the adit process...")
+		aditResult.BeforeWorkingStatus = "Not attending work"
+		aditResult.AfterWorkingStatus = "Working"
+		aditResult.Clock = "12:23:34"
 	}
+
+	return aditResult
 }

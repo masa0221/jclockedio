@@ -40,7 +40,9 @@ to quickly create a Cobra application.`,
 		jobcanClient := jobcan.New(config.Jobcan.Email, config.Jobcan.Password)
 		jobcanClient.Verbose = verbose
 		jobcanClient.NoAdit = noAdit
-		jobcanClient.Debug = debug
+		if debug {
+			jobcanClient.Host = "localhost"
+		}
 		jobcanClient.Adit()
 
 		if config.Chatwork.Send {
