@@ -3,6 +3,7 @@ package jobcan
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/sclevine/agouti"
 )
@@ -48,8 +49,25 @@ func (c *jobcanClient) Adit() aditResult {
 	webBrowser.Verbose = c.Verbose
 
 	webBrowser.login(c.generateLoginUrl(), c.email, c.password)
+	// Wait for rendering
+	time.Sleep(1 * time.Second)
 
-	return webBrowser.adit(c.NoAdit)
+	aditResult := aditResult{}
+	aditResult.BeforeWorkingStatus = webBrowser.fetchWorkingStatus()
+
+	c.outputVerboseMessage(fmt.Sprintf("Adit process. noAdit: %v", c.NoAdit))
+	if c.NoAdit {
+		c.outputVerboseMessage("The adit was no execute")
+	} else {
+		webBrowser.adit()
+	}
+	aditResult.Clock = webBrowser.fetchClock()
+
+	// Wait for rendering
+	time.Sleep(1 * time.Second)
+	aditResult.AfterWorkingStatus = webBrowser.fetchWorkingStatus()
+
+	return aditResult
 }
 
 type webBrowser struct {
@@ -107,25 +125,44 @@ func (b *webBrowser) login(url string, email string, password string) {
 	if err != nil {
 		log.Fatalf("Failed to navigate at Login page:%v", err)
 	}
+	// Input login form
+	identityElement := b.page.FindByID("user_email")
+	passwordElement := b.page.FindByID("user_password")
+	identityElement.Fill(email)
+	passwordElement.Fill(password)
+
+	// submit
+	if err := b.page.FindByClass("form__login").Submit(); err != nil {
+		log.Fatalf("Failed to login: %v", err)
+	}
 
 	b.outputVerboseMessage(fmt.Sprintf("Execute login process. err: %v", err))
 }
 
-func (b *webBrowser) adit(noAdit bool) aditResult {
-	b.outputVerboseMessage(fmt.Sprintf("Adit process. noAdit: %v", noAdit))
+func (b *webBrowser) fetchWorkingStatus() string {
+	return b.fetchElementTextById("working_status")
+}
 
-	aditResult := aditResult{}
-	if noAdit {
-		b.outputVerboseMessage("The adit was no execute")
-		aditResult.BeforeWorkingStatus = "Not attending work"
-		aditResult.AfterWorkingStatus = "Working"
-		aditResult.Clock = "12:23:34"
-	} else {
-		b.outputVerboseMessage("Execute the adit process...")
-		aditResult.BeforeWorkingStatus = "Not attending work"
-		aditResult.AfterWorkingStatus = "Working"
-		aditResult.Clock = "12:23:34"
+func (b *webBrowser) fetchClock() string {
+	return b.fetchElementTextById("clock")
+}
+
+func (b *webBrowser) fetchElementTextById(id string) string {
+	b.outputVerboseMessage(fmt.Sprintf("Fetch %v text", id))
+	element := b.page.FindByID(id)
+	elementText, err := element.Text()
+	if err != nil {
+		log.Fatalf("Failed to fetch %s: %v", id, err)
 	}
 
-	return aditResult
+	return elementText
+}
+
+func (b *webBrowser) adit() {
+	b.outputVerboseMessage("Execute the adit process...")
+
+	aditButtonElement := b.page.FindByID("adit-button-push")
+	if err := aditButtonElement.Click(); err != nil {
+		log.Fatalf("Failed to clocked in or out! (Failed to click adit button): %v", err)
+	}
 }
