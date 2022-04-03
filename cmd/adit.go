@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/masa0221/jclockedio/internal/chatwork"
 	"github.com/masa0221/jclockedio/internal/jobcan"
@@ -27,12 +28,12 @@ to quickly create a Cobra application.`,
 		noAdit, err := cmd.Flags().GetBool("no-adit")
 		if err != nil {
 			fmt.Println("Can't read no-adit flag: ", err)
-			return
+			os.Exit(1)
 		}
 		verbose, err := cmd.Flags().GetBool("verbose")
 		if err != nil {
 			fmt.Println("Can't read verbose flag: ", err)
-			return
+			os.Exit(1)
 		}
 
 		// Clocked in/out
@@ -52,6 +53,7 @@ to quickly create a Cobra application.`,
 			_, err := chatworkClient.SendMessage(outputMessage, config.Chatwork.RoomId)
 			if err != nil {
 				fmt.Println("Failed to send to Chatwork")
+				os.Exit(1)
 			}
 		}
 	},
