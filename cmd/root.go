@@ -61,11 +61,6 @@ var rootCmd = &cobra.Command{
 	Short: "Jobcan clocked in/out tool",
 	Long: `This is a things for clocked in/out to Jobcan, then it results are send to Chatwork.
 "jclockedio" means Jobcan clocked in/out.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(config)
-	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
