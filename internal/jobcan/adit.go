@@ -97,12 +97,14 @@ func (c *jobcanClient) openWebBrowser() *webBrowser {
 	err := driver.Start()
 	c.outputVerboseMessage(fmt.Sprintf("Start chrome driver. err: %v", err))
 	if err != nil {
+		driver.Stop()
 		log.Fatalf("Failed to start driver:%v", err)
 	}
 
 	page, err := driver.NewPage()
 	c.outputVerboseMessage(fmt.Sprintf("Create new page on chrome driver. err: %v", err))
 	if err != nil {
+		driver.Stop()
 		log.Fatalf("Failed to open page:%v", err)
 	}
 
@@ -123,6 +125,7 @@ func (b *webBrowser) login(url string, email string, password string) {
 	err := b.page.Navigate(url)
 	b.outputVerboseMessage(fmt.Sprintf("Open login page. url: %v err: %v", url, err))
 	if err != nil {
+		b.driver.Stop()
 		log.Fatalf("Failed to navigate at Login page:%v", err)
 	}
 	// Input login form
@@ -133,6 +136,7 @@ func (b *webBrowser) login(url string, email string, password string) {
 
 	// submit
 	if err := b.page.FindByClass("form__login").Submit(); err != nil {
+		b.driver.Stop()
 		log.Fatalf("Failed to login: %v", err)
 	}
 
@@ -152,6 +156,7 @@ func (b *webBrowser) fetchElementTextById(id string) string {
 	element := b.page.FindByID(id)
 	elementText, err := element.Text()
 	if err != nil {
+		b.driver.Stop()
 		log.Fatalf("Failed to fetch %s: %v", id, err)
 	}
 
@@ -163,6 +168,7 @@ func (b *webBrowser) adit() {
 
 	aditButtonElement := b.page.FindByID("adit-button-push")
 	if err := aditButtonElement.Click(); err != nil {
+		b.driver.Stop()
 		log.Fatalf("Failed to clocked in or out! (Failed to click adit button): %v", err)
 	}
 }
