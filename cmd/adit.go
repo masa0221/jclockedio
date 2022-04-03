@@ -7,6 +7,8 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
+	"text/template"
 
 	"github.com/masa0221/jclockedio/internal/chatwork"
 	"github.com/masa0221/jclockedio/internal/jobcan"
@@ -43,17 +45,20 @@ to quickly create a Cobra application.`,
 		aditResult := jobcanClient.Adit()
 
 		// Output message
-		outputMessage := generateOutputMessage(aditResult.Clock, aditResult.BeforeWorkingStatus, aditResult.AfterWorkingStatus)
-		fmt.Println(outputMessage)
+		if config.Output.Format != "" {
+			// stdout
+			outputMessage := generateOutputMessage(config.Output.Format, aditResult.Clock, aditResult.BeforeWorkingStatus, aditResult.AfterWorkingStatus)
+			fmt.Println(outputMessage)
 
-		// Send to Chatwork
-		if config.Chatwork.Send {
-			chatworkClient := chatwork.New(config.Chatwork.ApiToken)
-			chatworkClient.Verbose = verbose
-			_, err := chatworkClient.SendMessage(outputMessage, config.Chatwork.RoomId)
-			if err != nil {
-				fmt.Println("Failed to send to Chatwork")
-				os.Exit(1)
+			// Send to Chatwork
+			if config.Chatwork.Send {
+				chatworkClient := chatwork.New(config.Chatwork.ApiToken)
+				chatworkClient.Verbose = verbose
+				_, err := chatworkClient.SendMessage(outputMessage, config.Chatwork.RoomId)
+				if err != nil {
+					fmt.Println("Failed to send to Chatwork")
+					os.Exit(1)
+				}
 			}
 		}
 	},
@@ -73,6 +78,23 @@ func init() {
 	aditCmd.Flags().Bool("no-adit", false, "It login to Jobcan using by configure, but no adit.(The adit means to push button of clocked in/out)")
 }
 
-func generateOutputMessage(clock string, beforeStatus string, afterStatus string) string {
-	return fmt.Sprintf("clock: %s, %s -> %s", clock, beforeStatus, afterStatus)
+func generateOutputMessage(outputFormat string, clock string, beforeStatus string, afterStatus string) string {
+	assignData := map[string]interface{}{
+		"clock":        clock,
+		"beforeStatus": beforeStatus,
+		"afterStatus":  afterStatus,
+	}
+
+	tpl, err := template.New("").Parse(outputFormat)
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+	writer := new(strings.Builder)
+	if err := tpl.Execute(writer, assignData); err != nil {
+		fmt.Println(err)
+		os.Exit(0)
+	}
+
+	return writer.String()
 }

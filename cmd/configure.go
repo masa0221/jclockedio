@@ -17,13 +17,21 @@ import (
 // configureCmd represents the configure command
 var configureCmd = &cobra.Command{
 	Use:   "configure",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
+	Short: "Generate and regenerate configure file",
+	Long: `Generate and regenerate configure file
 
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+Output format:
+Output format is use for adit's stdout and Chatwork message.
+
+You can use variables below.
+----
+{{ .clock }}           -- clock time
+{{ .beforeStatus }}    -- before clocked in/out status
+{{ .afterStatus }}     -- after clocked in/out status
+----
+For example:
+[{{ .clock }}] {{ .beforeStatus }} => {{ .afterStatus }}
+`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("configure called")
 		configInit()
@@ -48,6 +56,7 @@ func configInit() {
 	maskType := newDataMaskType()
 	config.Jobcan.Email = readInput("Jobcan E-mail", config.Jobcan.Email, maskType.Partial)
 	config.Jobcan.Password = readInput("Jobcan Password", config.Jobcan.Password, maskType.Password)
+	config.Output.Format = readInput("Output format", config.Output.Format, maskType.None)
 
 	if readInputYN("Do you send to Chatwork?") {
 		config.Chatwork.Send = true
@@ -56,7 +65,6 @@ func configInit() {
 	} else {
 		config.Chatwork.Send = false
 	}
-
 	filepath := os.ExpandEnv("$HOME") + "/.jclockedio"
 	saveConfig(filepath, config)
 	fmt.Printf("\nCreated!(%v)\nEnjoy your work🌸\n", filepath)

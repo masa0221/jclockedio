@@ -45,9 +45,14 @@ type ChatworkConfig struct {
 	RoomId   string `toml:"roomid"`
 }
 
+type OutputConfig struct {
+	Format string `toml:"format"`
+}
+
 type Config struct {
-	Jobcan   JobcanConfig   `toml:"jobcan"`
-	Chatwork ChatworkConfig `toml:"chatwork"`
+	Jobcan   JobcanConfig   `toml:"Jobcan"`
+	Chatwork ChatworkConfig `toml:"Chatwork"`
+	Output   OutputConfig   `toml:"Output"`
 }
 
 // rootCmd represents the base command when called without any subcommands
