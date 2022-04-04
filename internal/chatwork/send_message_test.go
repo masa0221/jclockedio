@@ -10,7 +10,7 @@ import (
 
 func TestSendMessage(t *testing.T) {
 	wantRoomId := "12345"
-	wantMessage := "hello"
+	wantMessage := "[12:23:23] before -> after"
 	wantApiToken := "qwert12345"
 	wantPath := "/v2/rooms/12345/messages"
 	wantMessageId := "0987654321"

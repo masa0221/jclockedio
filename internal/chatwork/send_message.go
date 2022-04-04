@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/url"
 )
 
 type chatworkClient struct {
@@ -37,7 +38,7 @@ func (c *chatworkClient) outputVerboseMessage(message string) {
 }
 
 func (c *chatworkClient) SendMessage(message string, toRoomId string) (string, error) {
-	url := fmt.Sprintf("%v/rooms/%v/messages?body=%v", c.generateEndpointUrl(), toRoomId, message)
+	url := fmt.Sprintf("%v/rooms/%v/messages?body=%v", c.generateEndpointUrl(), toRoomId, url.QueryEscape(message))
 
 	req, err := http.NewRequest("POST", url, nil)
 	c.outputVerboseMessage(fmt.Sprintf("Create NewRequest. URL: %v err: %v", url, err))
