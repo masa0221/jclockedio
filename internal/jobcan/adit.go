@@ -24,9 +24,7 @@ type aditResult struct {
 
 func New(email string, password string) *jobcanClient {
 	client := jobcanClient{}
-	// TODO: Remove localhost and uncomment below
-	// client.Host = "https://ssl.jobcan.jp"
-	client.BaseUrl = "http://localhost"
+	client.BaseUrl = "https://ssl.jobcan.jp"
 	client.email = email
 	client.password = password
 
