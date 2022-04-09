@@ -39,6 +39,12 @@ You want to set other timezone, specifiy -e option.
 docker run --rm -it -e TZ=UTC jclockedio
 ```
 
+For example:  
+It can be specified settings files, like below.
+```
+docker run --rm -it -v "$HOME"/.jclockedio:/root/.jclockedio jclockedio configure
+```
+
 
 ## NOTE
 IF YOU CLOUDN'T CLOCKED IN/OUT, I CAN'T HAVE ANY RESPONSIBIRITY.  
