@@ -30,7 +30,15 @@ You can use variables below.
 {{ .afterStatus }}     -- after clocked in/out status
 ----
 For example:
+
+Case1. Simple format
 [{{ .clock }}] {{ .beforeStatus }} => {{ .afterStatus }}
+
+Case2. Change output format by after status
+{{ if eq .afterStatus "Working" }}I'm working now!{{ else if eq .afterStatus "Not attending work" }}I'm done today.See you tomorrow.{{ else }}Opps! Problem occured.{{ end }} at {{ .clock }}
+
+
+You can confirm the output by adit command specified --no-adit option.
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		configInit()
