@@ -14,4 +14,26 @@ archives:
   - format: zip
     name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     wrap_in_directory: true
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+brews:
+  -
+    name: jclockedio
+    tap:
+      owner: masa0221
+      name: homebrew-tap
+      branch: main
+    homepage: "https://github.com/masa0221/jclockedio"
+    description: "This is a things for clocked in/out to Jobcan, then it results are send to Chatwork."
+    license: "MIT"
+    dependencies:
+      - name: chromedriver
 
