@@ -31,6 +31,10 @@ brews:
       owner: masa0221
       name: homebrew-tap
       branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    commit_author:
+      name: goreleaserbot
+      email: goreleaser@carlosbecker.com
     homepage: "https://github.com/masa0221/jclockedio"
     description: "This is a things for clocked in/out to Jobcan, then it results are send to Chatwork."
     license: "MIT"
