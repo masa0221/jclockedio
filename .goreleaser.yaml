@@ -35,6 +35,7 @@ brews:
     commit_author:
       name: goreleaserbot
       email: goreleaser@carlosbecker.com
+    folder: Formula
     homepage: "https://github.com/masa0221/jclockedio"
     description: "This is a things for clocked in/out to Jobcan, then it results are send to Chatwork."
     license: "MIT"
