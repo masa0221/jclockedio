@@ -7,10 +7,10 @@ WORKDIR /app
 COPY . ./
 RUN go mod download
 
-RUN go build -o /jclockedio
+RUN go build -o /usr/bin/jclockedio
 
 ENV CGO_ENABLED=0
 ENV TZ=Asia/Tokyo
 
-ENTRYPOINT [ "/jclockedio" ]
+ENTRYPOINT [ "jclockedio" ]
 
