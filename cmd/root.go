@@ -101,6 +101,7 @@ func initConfig() {
 
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println("Config file is not found.\nIt be execute configure process.")
+		configInit()
 		os.Exit(0)
 	}
 
