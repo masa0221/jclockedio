@@ -37,8 +37,6 @@ brews:
       email: goreleaser@carlosbecker.com
     folder: Formula
     homepage: "https://github.com/masa0221/jclockedio"
-    description: "This is a things for clocked in/out to Jobcan, then it results are send to Chatwork."
+    description: "This is a things for clocked in/out to Jobcan"
     license: "MIT"
-    custom_block: |
-      depends_on cask: "chromedriver"
 
