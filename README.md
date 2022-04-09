@@ -2,6 +2,24 @@ This is a things for clocked in/out to Jobcan, then it results are send to Chatw
 
 "jclockedio" means Jobcan clocked in/out.
 
+## Install
+for macOS
+```
+brew tap masa0221/tap
+```
+
+```
+brew install jclockedio
+```
+
+Unfortunatry, jclockedio is depends chrome and chromedriver.  
+Please execute below.
+```
+brew install --cask chromedriver
+```
+If you cannot forgive, can choose to use docker.
+
+
 ## How to use
 ### 1. Configure
 ```
