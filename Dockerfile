@@ -1,16 +1,16 @@
-FROM golang:1.14.6-alpine3.12
+# syntax=docker/dockerfile:1
+FROM golang:1.17.8-alpine3.15
+RUN apk add git chromium chromium-chromedriver tzdata
 
-# git
-RUN apk add git
+WORKDIR /app
 
-# chrome
-RUN apk add chromium chromium-chromedriver
+COPY . ./
+RUN go mod download
 
-# go install
-WORKDIR /go/src/app
-COPY . .
+RUN go build -o /usr/bin/jclockedio
 
-RUN go get -d -v ./...
-RUN go install -v ./...
+ENV CGO_ENABLED=0
+ENV TZ=Asia/Tokyo
 
-CMD ["jclockedio"]
+ENTRYPOINT [ "jclockedio" ]
+
