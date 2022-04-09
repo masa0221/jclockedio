@@ -1,0 +1,17 @@
+name: Run test
+
+on: push
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build the Docker image
+      run: docker build -t go-build-test . --file Dockerfile
+    - name: Run functional tests
+      run: docker run --rm go-build-test go test -v ./...
+
