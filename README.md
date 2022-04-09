@@ -12,8 +12,8 @@ brew tap masa0221/tap
 brew install jclockedio
 ```
 
-Unfortunatry, jclockedio is depends chrome and chromedriver.  
-Please execute below.
+Unfortunatry, jclockedio depends chrome and chromedriver.  
+Please execute below and install Chrome.
 ```
 brew install --cask chromedriver
 ```
@@ -37,7 +37,7 @@ IF YOU WANT TO CONFIRM IT CAN BE LOGIN ONLY, YOU CAN USE `--no-adit` OPTION.
 
 
 ## Use docker
-jclockedio is depends on chrome and chromedriver.  
+jclockedio depends on chrome and chromedriver.  
 If you do not install those software on host machine, you can clocked in/out on docker.
 
 ### 1. Build image
@@ -50,14 +50,14 @@ Execute clocked in/out on Jobcan.
 ```
 docker run --rm -it jclockedio
 ```
-Default timezone is `Asia/Tokyo`
+Default timezone is `Asia/Tokyo`.
 
 You want to set other timezone, specifiy -e option.
 ```
 docker run --rm -it -e TZ=UTC jclockedio
 ```
 
-For example:  
+#### For example
 It can be specified settings files, like below.
 ```
 docker run --rm -it -v "$HOME"/.jclockedio:/root/.jclockedio jclockedio configure
