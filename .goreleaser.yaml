@@ -39,6 +39,6 @@ brews:
     homepage: "https://github.com/masa0221/jclockedio"
     description: "This is a things for clocked in/out to Jobcan, then it results are send to Chatwork."
     license: "MIT"
-    dependencies:
-      - name: chromedriver
+    custom_block: |
+      depends_on cask: "chromedriver"
 
