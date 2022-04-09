@@ -13,5 +13,5 @@ jobs:
     - name: Build the Docker image
       run: docker build -t jclockedio . --file Dockerfile
     - name: Run functional tests
-      run: docker run --rm -it --entrypoint go jclockedio test -v ./...
+      run: docker run --rm --entrypoint go jclockedio test -v ./...
 
