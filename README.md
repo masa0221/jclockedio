@@ -40,6 +40,8 @@ IF YOU WANT TO CONFIRM IT CAN BE LOGIN ONLY, YOU CAN USE `--no-adit` OPTION.
 jclockedio depends on chrome and chromedriver.  
 If you do not install those software on host machine, you can clocked in/out on docker.
 
+See also [this](https://github.com/masa0221/jclockedio/pkgs/container/jclockedio).
+
 ### 1. Build image
 ```
 docker build -t jclockedio .
