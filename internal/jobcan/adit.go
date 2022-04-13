@@ -52,6 +52,7 @@ func (c *jobcanClient) Adit() aditResult {
 
 	aditResult := aditResult{}
 	aditResult.BeforeWorkingStatus = webBrowser.fetchWorkingStatus()
+	aditResult.Clock = webBrowser.fetchClock()
 
 	c.outputVerboseMessage(fmt.Sprintf("Adit process. noAdit: %v", c.NoAdit))
 	if c.NoAdit {
@@ -62,7 +63,6 @@ func (c *jobcanClient) Adit() aditResult {
 
 	// Wait for rendering
 	time.Sleep(1 * time.Second)
-	aditResult.Clock = webBrowser.fetchClock()
 	aditResult.AfterWorkingStatus = webBrowser.fetchWorkingStatus()
 
 	return aditResult
