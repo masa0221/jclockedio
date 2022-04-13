@@ -59,10 +59,10 @@ func (c *jobcanClient) Adit() aditResult {
 	} else {
 		webBrowser.adit()
 	}
-	aditResult.Clock = webBrowser.fetchClock()
 
 	// Wait for rendering
 	time.Sleep(1 * time.Second)
+	aditResult.Clock = webBrowser.fetchClock()
 	aditResult.AfterWorkingStatus = webBrowser.fetchWorkingStatus()
 
 	return aditResult
