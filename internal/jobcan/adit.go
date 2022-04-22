@@ -63,7 +63,7 @@ func (c *jobcanClient) Adit() aditResult {
 
 	// Wait for rendering
 	time.Sleep(1 * time.Second)
-	aditResult.AfterWorkingStatus = webBrowser.fetchWorkingStatus()
+	aditResult.AfterWorkingStatus = webBrowser.fetchAfterStatus(aditResult.BeforeWorkingStatus, 5)
 
 	return aditResult
 }
@@ -147,6 +147,15 @@ func (b *webBrowser) fetchWorkingStatus() string {
 
 func (b *webBrowser) fetchClock() string {
 	return b.fetchElementTextById("clock")
+}
+
+func (b *webBrowser) fetchAfterStatus(beforeStatus string, retry int) string {
+	afterStatus := b.fetchWorkingStatus()
+	if beforeStatus != afterStatus || retry <= 0 {
+		return afterStatus
+	}
+	time.Sleep(3 * time.Second)
+	return b.fetchAfterStatus(beforeStatus, retry-1)
 }
 
 func (b *webBrowser) fetchElementTextById(id string) string {
