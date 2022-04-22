@@ -43,7 +43,9 @@ func TestAdit(t *testing.T) {
     </body>
     <script>
       document.getElementById('adit-button').onclick = function() {
-        document.getElementById('working_status').innerHTML= '%v';
+        setTimeout(function() {
+          document.getElementById('working_status').innerHTML= '%v';
+        }, 10000);
       };
     </script>
     </html>`, wantBeforeWorkingStatus, wantClock, wantAfterWorkingStatus)
