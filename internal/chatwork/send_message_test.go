@@ -14,6 +14,7 @@ func TestSendMessage(t *testing.T) {
 	wantApiToken := "qwert12345"
 	wantPath := "/v2/rooms/12345/messages"
 	wantMessageId := "0987654321"
+	wantContentType := "application/x-www-form-urlencoded"
 
 	h := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requestedMethod := r.Method
@@ -28,6 +29,16 @@ func TestSendMessage(t *testing.T) {
 		gotApiToken := r.Header.Get("X-ChatWorkToken")
 		if gotApiToken != wantApiToken {
 			t.Errorf("want %v, got %v", wantApiToken, gotApiToken)
+		}
+
+		gotContentType := r.Header.Get("Content-Type")
+		if gotContentType != wantContentType {
+			t.Errorf("want %v, got %v", wantContentType, gotContentType)
+		}
+
+		gotMessage := r.PostFormValue("body")
+		if gotMessage != wantMessage {
+			t.Errorf("want %v, got %v", wantMessage, gotMessage)
 		}
 
 		if err := r.ParseForm(); err != nil {
