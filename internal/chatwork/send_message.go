@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type chatworkClient struct {
@@ -38,15 +39,17 @@ func (c *chatworkClient) outputVerboseMessage(message string) {
 }
 
 func (c *chatworkClient) SendMessage(message string, toRoomId string) (string, error) {
-	url := fmt.Sprintf("%v/rooms/%v/messages?body=%v", c.generateEndpointUrl(), toRoomId, url.QueryEscape(message))
+	endpoint := fmt.Sprintf("%v/rooms/%v/messages", c.generateEndpointUrl(), toRoomId)
+	payload := strings.NewReader(fmt.Sprintf("self_unread=0&body=%v", url.QueryEscape(message)))
 
-	req, err := http.NewRequest("POST", url, nil)
-	c.outputVerboseMessage(fmt.Sprintf("Create NewRequest. URL: %v err: %v", url, err))
+	req, err := http.NewRequest("POST", endpoint, payload)
+	c.outputVerboseMessage(fmt.Sprintf("Create NewRequest. URL: %v err: %v", endpoint, err))
 	if err != nil {
 		return "", fmt.Errorf("Failed to create request: %s", err)
 	}
 
 	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Add("X-ChatWorkToken", c.apiToken)
 
 	res, err := http.DefaultClient.Do(req)
