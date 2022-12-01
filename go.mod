@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/pelletier/go-toml/v2 v2.0.5
+	github.com/pelletier/go-toml/v2 v2.0.6
 	github.com/sclevine/agouti v3.0.0+incompatible
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.12.0
