@@ -1,4 +1,5 @@
-type NotificationService interface {
-    Notify(message string) error
-}
+package notification
 
+type NotificationService interface {
+	Notify(message string) error
+}
