@@ -22,16 +22,16 @@ var aditCmd = &cobra.Command{
 	Short: "Clocked in/out with Jobcan",
 	Long:  `Clocked in/out with Jobcan, then send message to Chatwork.(if you can the setting true)`,
 	Run: func(cmd *cobra.Command, args []string) {
-		noAdit, err := cmd.Flags().GetBool("no-adit")
-		if err != nil {
-			fmt.Println("Can't read no-adit flag: ", err)
-			os.Exit(1)
-		}
-		verbose, err := cmd.Flags().GetBool("verbose")
-		if err != nil {
-			fmt.Println("Can't read verbose flag: ", err)
-			os.Exit(1)
-		}
+		// noAdit, err := cmd.Flags().GetBool("no-adit")
+		// if err != nil {
+		// 	fmt.Println("Can't read no-adit flag: ", err)
+		// 	os.Exit(1)
+		// }
+		// verbose, err := cmd.Flags().GetBool("verbose")
+		// if err != nil {
+		// 	fmt.Println("Can't read verbose flag: ", err)
+		// 	os.Exit(1)
+		// }
 
 		// Clocked in/out
 		browser, err := browser.NewAgoutiBrowser()

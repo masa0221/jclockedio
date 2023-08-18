@@ -46,34 +46,58 @@ func (ab *AgoutiBrowser) Close() {
 	ab.driver.Stop()
 }
 
-func (ab *AgoutiBrowser) Submit(url string, postData map[string]string, submitBtnClass string) error {
+func (ab *AgoutiBrowser) Open(url string) error {
 	err := ab.page.Navigate(url)
 	if err != nil {
-		return fmt.Errorf("Failed to navigate to Login page: %v", err)
+		defer ab.driver.Stop()
+		return fmt.Errorf("Failed to Open to page. url: %v", url)
 	}
 
+	return nil
+}
+
+func (ab *AgoutiBrowser) Submit(postData map[string]string, submitBtnClass string) error {
 	for elementID, value := range postData {
-		ab.fillElementByID(elementID, value)
+		if err := ab.fillElementByID(elementID, value); err != nil {
+			defer ab.driver.Stop()
+			return fmt.Errorf("Failed to fill the specified data in elements. postData: %v -> %v", elementID, value)
+		}
 	}
 
 	// submit
 	if err := ab.page.FindByClass(submitBtnClass).Submit(); err != nil {
-		ab.driver.Stop()
-		return fmt.Errorf("Failed to login: %v", err)
+		defer ab.driver.Stop()
+		return fmt.Errorf("Failed to submit to the page with the specified data. specified class: %v", submitBtnClass)
 	}
 
 	return nil
 }
 
 func (ab *AgoutiBrowser) ClickElementByID(id string) error {
-	return ab.page.FindByID(id).Click()
+	if err := ab.page.FindByID(id).Click(); err != nil {
+		ab.driver.Stop()
+		return fmt.Errorf("Failed to click the element with the specified ID: %v", id)
+	}
+
+	return nil
 }
 
 func (ab *AgoutiBrowser) GetElementValueByID(id string) (string, error) {
 	element := ab.page.FindByID(id)
-	return element.Text()
+	elementText, err := element.Text()
+	if err != nil {
+		ab.driver.Stop()
+		return "", fmt.Errorf("Failed to fetch the element text of the specified ID: %v", id)
+	}
+
+	return elementText, nil
 }
 
 func (ab *AgoutiBrowser) fillElementByID(id, value string) error {
-	return ab.page.FindByID(id).Fill(value)
+	if err := ab.page.FindByID(id).Fill(value); err != nil {
+		ab.driver.Stop()
+		return fmt.Errorf("Failed to fill the value in the specified ID: %v", id)
+	}
+
+	return nil
 }

@@ -4,12 +4,11 @@ import (
 	"fmt"
 
 	"github.com/masa0221/jclockedio/pkg/client/jobcan"
-	"github.com/masa0221/jclockedio/pkg/service/notification"
 )
 
 type ClockIOService struct {
 	jobcanClient        jobcan.JobcanClient
-	notificationService *notification.NotificationService
+	notificationService NotificationService
 	noAdit              bool
 	notifyFormat        string
 }
@@ -20,7 +19,11 @@ type Result struct {
 	Clock               string
 }
 
-func NewClockIOService(jobcanClient jobcan.JobcanClient, ns *notification.NotificationService) *ClockIOService {
+type NotificationService interface {
+	Notify(clock string, beforeStatus string, afterStatus string) error
+}
+
+func NewClockIOService(jobcanClient jobcan.JobcanClient, ns NotificationService) *ClockIOService {
 	return &ClockIOService{
 		jobcanClient:        jobcanClient,
 		notificationService: ns,

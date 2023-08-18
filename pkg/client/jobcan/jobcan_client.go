@@ -2,6 +2,7 @@ package jobcan
 
 import (
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -28,31 +29,37 @@ type AditResult struct {
 }
 
 type Browser interface {
-	Close()
-	Submit(url string, postData map[string]string, submitBtnClass string) error
+	Open(url string) error
+	Submit(postData map[string]string, submitBtnClass string) error
 	GetElementValueByID(id string) (string, error)
 	ClickElementByID(id string) error
+	Close()
 }
 
 func NewJobcanClient(b Browser, credentials *JobcanCredentials) *DefaultJobcanClient {
 	return &DefaultJobcanClient{
 		browser:     b,
 		credentials: credentials,
-		BaseUrl:     "https://ssl.jobcan.jp",
+		BaseUrl:     "",
 	}
 }
 
 func (jc *DefaultJobcanClient) Login() error {
+	// Open Login page
+	err := jc.browser.Open(jc.getLoginUrl())
+	if err != nil {
+		log.Fatalf("Failed to open the Login page:%v", err)
+	}
+
+	// Post email and password
 	postData := map[string]string{
 		"user_email":    jc.credentials.Email,
 		"user_password": jc.credentials.Password,
 	}
 	submitBtnClass := "form__login"
-
-	if err := jc.browser.Submit(jc.getLoginUrl(), postData, submitBtnClass); err != nil {
-		return fmt.Errorf("Failed to create browser: %v", err)
+	if err := jc.browser.Submit(postData, submitBtnClass); err != nil {
+		return fmt.Errorf("Failed to submit to login page: %v", err)
 	}
-	defer jc.browser.Close()
 
 	// Wait for rendering
 	time.Sleep(1 * time.Second)
@@ -61,6 +68,8 @@ func (jc *DefaultJobcanClient) Login() error {
 }
 
 func (jc *DefaultJobcanClient) Adit(noAdit bool) (*AditResult, error) {
+	defer jc.browser.Close()
+
 	clock, err := jc.browser.GetElementValueByID("clock")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to fetch the clock: %v", err)
@@ -72,8 +81,6 @@ func (jc *DefaultJobcanClient) Adit(noAdit bool) (*AditResult, error) {
 
 	if !noAdit {
 		if err := jc.browser.ClickElementByID("adit-button-push"); err != nil {
-			jc.browser.Close()
-
 			return nil, fmt.Errorf("Failed to clocked in or out! (Failed to click adit button): %v", err)
 		}
 	}
