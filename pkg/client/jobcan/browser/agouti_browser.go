@@ -2,7 +2,6 @@ package browser
 
 import (
 	"fmt"
-	"time"
 
 	"github.com/sclevine/agouti"
 )
@@ -47,13 +46,13 @@ func (ab *AgoutiBrowser) Close() {
 	ab.driver.Stop()
 }
 
-func (ab *AgoutiBrowser) Submit(url string, credentials map[string]string, submitBtnClass string) error {
+func (ab *AgoutiBrowser) Submit(url string, postData map[string]string, submitBtnClass string) error {
 	err := ab.page.Navigate(url)
 	if err != nil {
 		return fmt.Errorf("Failed to navigate to Login page: %v", err)
 	}
 
-	for elementID, value := range credentials {
+	for elementID, value := range postData {
 		ab.fillElementByID(elementID, value)
 	}
 
@@ -64,10 +63,6 @@ func (ab *AgoutiBrowser) Submit(url string, credentials map[string]string, submi
 	}
 
 	return nil
-}
-
-func (ab *AgoutiBrowser) WaitForRender(duration time.Duration) {
-	time.Sleep(duration)
 }
 
 func (ab *AgoutiBrowser) ClickElementByID(id string) error {

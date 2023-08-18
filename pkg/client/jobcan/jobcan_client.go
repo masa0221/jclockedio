@@ -5,10 +5,20 @@ import (
 	"time"
 )
 
-type JobcanClient struct {
-	browser Browser
-	baseUrl string
-	noAdit  bool
+type JobcanClient interface {
+	Login() error
+	Adit(noAdit bool) (*AditResult, error)
+}
+
+type DefaultJobcanClient struct {
+	browser     Browser
+	credentials *JobcanCredentials
+	BaseUrl     string
+}
+
+type JobcanCredentials struct {
+	Email    string
+	Password string
 }
 
 type AditResult struct {
@@ -19,28 +29,27 @@ type AditResult struct {
 
 type Browser interface {
 	Close()
-	Submit(url string, credentials map[string]string, submitBtnClass string) error
-	WaitForRender(time.Duration)
+	Submit(url string, postData map[string]string, submitBtnClass string) error
 	GetElementValueByID(id string) (string, error)
 	ClickElementByID(id string) error
 }
 
-func NewJobcanClient(b Browser, url string, noAdit bool) *JobcanClient {
-	return &JobcanClient{
-		browser: b,
-		baseUrl: url,
-		noAdit:  noAdit,
+func NewJobcanClient(b Browser, credentials *JobcanCredentials) *DefaultJobcanClient {
+	return &DefaultJobcanClient{
+		browser:     b,
+		credentials: credentials,
+		BaseUrl:     "https://ssl.jobcan.jp",
 	}
 }
 
-func (jc *JobcanClient) Login(email string, password string) error {
-	credentials := map[string]string{
-		"user_email":    email,
-		"user_password": password,
+func (jc *DefaultJobcanClient) Login() error {
+	postData := map[string]string{
+		"user_email":    jc.credentials.Email,
+		"user_password": jc.credentials.Password,
 	}
 	submitBtnClass := "form__login"
 
-	if err := jc.browser.Submit(jc.getLoginUrl(), credentials, submitBtnClass); err != nil {
+	if err := jc.browser.Submit(jc.getLoginUrl(), postData, submitBtnClass); err != nil {
 		return fmt.Errorf("Failed to create browser: %v", err)
 	}
 	defer jc.browser.Close()
@@ -51,7 +60,7 @@ func (jc *JobcanClient) Login(email string, password string) error {
 	return nil
 }
 
-func (jc *JobcanClient) Adit() (*AditResult, error) {
+func (jc *DefaultJobcanClient) Adit(noAdit bool) (*AditResult, error) {
 	clock, err := jc.browser.GetElementValueByID("clock")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to fetch the clock: %v", err)
@@ -61,7 +70,7 @@ func (jc *JobcanClient) Adit() (*AditResult, error) {
 		return nil, fmt.Errorf("Failed to fetch the status before clocking in/out: %v", err)
 	}
 
-	if !jc.noAdit {
+	if !noAdit {
 		if err := jc.browser.ClickElementByID("adit-button-push"); err != nil {
 			jc.browser.Close()
 
@@ -83,15 +92,15 @@ func (jc *JobcanClient) Adit() (*AditResult, error) {
 	}, nil
 }
 
-func (jc *JobcanClient) getLoginUrl() string {
-	return fmt.Sprintf("%s/jbcoauth/login", jc.baseUrl)
+func (jc *DefaultJobcanClient) getLoginUrl() string {
+	return fmt.Sprintf("%s/jbcoauth/login", jc.BaseUrl)
 }
 
-func (jc *JobcanClient) fetchWorkingStatus() (string, error) {
+func (jc *DefaultJobcanClient) fetchWorkingStatus() (string, error) {
 	return jc.browser.GetElementValueByID("working_status")
 }
 
-func (jc *JobcanClient) fetchAfterStatus(beforeStatus string, retry int) (string, error) {
+func (jc *DefaultJobcanClient) fetchAfterStatus(beforeStatus string, retry int) (string, error) {
 	afterStatus, err := jc.fetchWorkingStatus()
 	if err != nil {
 		return "", fmt.Errorf("Failed to fetch the afterStatus: %v", err)
