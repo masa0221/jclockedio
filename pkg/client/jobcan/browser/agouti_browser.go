@@ -35,7 +35,7 @@ func NewAgoutiBrowser() (*AgoutiBrowser, error) {
 		return nil, err
 	}
 
-	// Wait for driver
+	// Set wait for timeout
 	// See: https://www.seleniumqref.com/api/ruby/time_set/Ruby_implicit_wait.html
 	page.SetImplicitWait(10000)
 
@@ -49,7 +49,6 @@ func (ab *AgoutiBrowser) Close() {
 func (ab *AgoutiBrowser) Open(url string) error {
 	err := ab.page.Navigate(url)
 	if err != nil {
-		defer ab.driver.Stop()
 		return fmt.Errorf("Failed to Open to page. url: %v", url)
 	}
 
@@ -59,14 +58,12 @@ func (ab *AgoutiBrowser) Open(url string) error {
 func (ab *AgoutiBrowser) Submit(postData map[string]string, submitBtnClass string) error {
 	for elementID, value := range postData {
 		if err := ab.fillElementByID(elementID, value); err != nil {
-			defer ab.driver.Stop()
-			return fmt.Errorf("Failed to fill the specified data in elements. postData: %v -> %v", elementID, value)
+			return fmt.Errorf("Failed to fill the specified data in elements. elementID: %v", elementID)
 		}
 	}
 
 	// submit
 	if err := ab.page.FindByClass(submitBtnClass).Submit(); err != nil {
-		defer ab.driver.Stop()
 		return fmt.Errorf("Failed to submit to the page with the specified data. specified class: %v", submitBtnClass)
 	}
 
@@ -75,7 +72,6 @@ func (ab *AgoutiBrowser) Submit(postData map[string]string, submitBtnClass strin
 
 func (ab *AgoutiBrowser) ClickElementByID(id string) error {
 	if err := ab.page.FindByID(id).Click(); err != nil {
-		ab.driver.Stop()
 		return fmt.Errorf("Failed to click the element with the specified ID: %v", id)
 	}
 
@@ -86,7 +82,6 @@ func (ab *AgoutiBrowser) GetElementValueByID(id string) (string, error) {
 	element := ab.page.FindByID(id)
 	elementText, err := element.Text()
 	if err != nil {
-		ab.driver.Stop()
 		return "", fmt.Errorf("Failed to fetch the element text of the specified ID: %v", id)
 	}
 
@@ -95,7 +90,6 @@ func (ab *AgoutiBrowser) GetElementValueByID(id string) (string, error) {
 
 func (ab *AgoutiBrowser) fillElementByID(id, value string) error {
 	if err := ab.page.FindByID(id).Fill(value); err != nil {
-		ab.driver.Stop()
 		return fmt.Errorf("Failed to fill the value in the specified ID: %v", id)
 	}
 

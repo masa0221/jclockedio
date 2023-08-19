@@ -2,7 +2,6 @@ package jobcan
 
 import (
 	"fmt"
-	"log"
 	"time"
 )
 
@@ -48,7 +47,7 @@ func (jc *DefaultJobcanClient) Login() error {
 	// Open Login page
 	err := jc.browser.Open(jc.getLoginUrl())
 	if err != nil {
-		log.Fatalf("Failed to open the Login page:%v", err)
+		return fmt.Errorf("Failed to open the Login page: %v", jc.getLoginUrl())
 	}
 
 	// Post email and password
@@ -58,7 +57,7 @@ func (jc *DefaultJobcanClient) Login() error {
 	}
 	submitBtnClass := "form__login"
 	if err := jc.browser.Submit(postData, submitBtnClass); err != nil {
-		return fmt.Errorf("Failed to submit to login page: %v", err)
+		return fmt.Errorf("Failed to submit to login page")
 	}
 
 	// Wait for rendering
@@ -68,20 +67,18 @@ func (jc *DefaultJobcanClient) Login() error {
 }
 
 func (jc *DefaultJobcanClient) Adit(noAdit bool) (*AditResult, error) {
-	defer jc.browser.Close()
-
 	clock, err := jc.browser.GetElementValueByID("clock")
 	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch the clock: %v", err)
+		return nil, fmt.Errorf("Failed to fetch the clock")
 	}
 	beforeStatus, err := jc.fetchWorkingStatus()
 	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch the status before clocking in/out: %v", err)
+		return nil, fmt.Errorf("Failed to fetch the status before clocking in/out")
 	}
 
 	if !noAdit {
 		if err := jc.browser.ClickElementByID("adit-button-push"); err != nil {
-			return nil, fmt.Errorf("Failed to clocked in or out! (Failed to click adit button): %v", err)
+			return nil, fmt.Errorf("Failed to clocked in or out! (Failed to click adit button)")
 		}
 	}
 
@@ -89,7 +86,7 @@ func (jc *DefaultJobcanClient) Adit(noAdit bool) (*AditResult, error) {
 	time.Sleep(1 * time.Second)
 	afterStatus, err := jc.fetchAfterStatus(beforeStatus, 5)
 	if err != nil {
-		return nil, fmt.Errorf("Failed to fetch the status after clocking in/out: %v", err)
+		return nil, fmt.Errorf("Failed to fetch the status after clocking in/out")
 	}
 
 	return &AditResult{
@@ -110,7 +107,7 @@ func (jc *DefaultJobcanClient) fetchWorkingStatus() (string, error) {
 func (jc *DefaultJobcanClient) fetchAfterStatus(beforeStatus string, retry int) (string, error) {
 	afterStatus, err := jc.fetchWorkingStatus()
 	if err != nil {
-		return "", fmt.Errorf("Failed to fetch the afterStatus: %v", err)
+		return "", fmt.Errorf("Failed to fetch the afterStatus. beforeStatus: %v, retry: %v", beforeStatus, retry)
 	}
 
 	if beforeStatus != afterStatus || retry <= 0 {

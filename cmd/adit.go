@@ -39,6 +39,8 @@ var aditCmd = &cobra.Command{
 			fmt.Println("Can't launch a browser: ", err)
 			os.Exit(1)
 		}
+		defer browser.Close()
+
 		credentials := &jobcan.JobcanCredentials{
 			Email:    config.Jobcan.Email,
 			Password: config.Jobcan.Password,
