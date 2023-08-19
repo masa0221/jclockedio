@@ -7,13 +7,14 @@ import (
 
 type JobcanClient interface {
 	Login() error
-	Adit(noAdit bool) (*AditResult, error)
+	Adit() (*AditResult, error)
 }
 
 type DefaultJobcanClient struct {
 	browser     Browser
 	credentials *JobcanCredentials
 	BaseUrl     string
+	NoAdit      bool
 }
 
 type JobcanCredentials struct {
@@ -29,10 +30,10 @@ type AditResult struct {
 
 type Browser interface {
 	Open(url string) error
+	Close()
 	Submit(postData map[string]string, submitBtnClass string) error
 	GetElementValueByID(id string) (string, error)
 	ClickElementByID(id string) error
-	Close()
 }
 
 func NewJobcanClient(b Browser, credentials *JobcanCredentials) *DefaultJobcanClient {
@@ -40,6 +41,7 @@ func NewJobcanClient(b Browser, credentials *JobcanCredentials) *DefaultJobcanCl
 		browser:     b,
 		credentials: credentials,
 		BaseUrl:     "",
+		NoAdit:      false,
 	}
 }
 
@@ -66,7 +68,7 @@ func (jc *DefaultJobcanClient) Login() error {
 	return nil
 }
 
-func (jc *DefaultJobcanClient) Adit(noAdit bool) (*AditResult, error) {
+func (jc *DefaultJobcanClient) Adit() (*AditResult, error) {
 	clock, err := jc.browser.GetElementValueByID("clock")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to fetch the clock")
@@ -76,7 +78,7 @@ func (jc *DefaultJobcanClient) Adit(noAdit bool) (*AditResult, error) {
 		return nil, fmt.Errorf("Failed to fetch the status before clocking in/out")
 	}
 
-	if !noAdit {
+	if !jc.NoAdit {
 		if err := jc.browser.ClickElementByID("adit-button-push"); err != nil {
 			return nil, fmt.Errorf("Failed to clocked in or out! (Failed to click adit button)")
 		}

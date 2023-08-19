@@ -42,7 +42,7 @@ func (m *MockJobcanClient) Login() error {
 	return nil
 }
 
-func (m *MockJobcanClient) Adit(noAdit bool) (*jobcan.AditResult, error) {
+func (m *MockJobcanClient) Adit() (*jobcan.AditResult, error) {
 	return &jobcan.AditResult{
 		BeforeWorkingStatus: "IN",
 		AfterWorkingStatus:  "OUT",

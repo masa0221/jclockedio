@@ -83,7 +83,8 @@ func TestJobcanClient(t *testing.T) {
 	}
 
 	// Do not adit
-	aditResult, err := client.Adit(true)
+	client.NoAdit = true
+	aditResult, err := client.Adit()
 	if err != nil {
 		t.Errorf("Error in Adit: %v", err)
 	}
@@ -92,7 +93,7 @@ func TestJobcanClient(t *testing.T) {
 	assertEquals(t, aditResult.Clock, wantClock, "check clock(do not adit)")
 
 	// // Do adit
-	aditResult, err = client.Adit(false)
+	aditResult, err = client.Adit()
 	if err != nil {
 		t.Errorf("Error in Adit: %v", err)
 	}

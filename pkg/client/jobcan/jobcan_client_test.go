@@ -29,7 +29,7 @@ func TestAdit(t *testing.T) {
 	}
 	client := jobcan.NewJobcanClient(mockBrowser, credentials)
 
-	result, err := client.Adit(false)
+	result, err := client.Adit()
 	if err != nil {
 		t.Errorf("Error in Adit: %v", err)
 	}
@@ -45,6 +45,7 @@ type MockBrowser struct{}
 func (m *MockBrowser) Open(url string) error {
 	return nil
 }
+func (m *MockBrowser) Close() {}
 func (m *MockBrowser) Submit(postData map[string]string, submitBtnClass string) error {
 	return nil
 }
@@ -54,7 +55,6 @@ func (m *MockBrowser) GetElementValueByID(id string) (string, error) {
 func (m *MockBrowser) ClickElementByID(id string) error {
 	return nil
 }
-func (m *MockBrowser) Close() {}
 
 func TestAditWithNoAdit(t *testing.T) {
 	mockBrowser := &MockBrowserWithNoAdit{}
@@ -63,8 +63,9 @@ func TestAditWithNoAdit(t *testing.T) {
 		Password: "password",
 	}
 	client := jobcan.NewJobcanClient(mockBrowser, credentials)
+	client.NoAdit = true
 
-	result, err := client.Adit(true)
+	result, err := client.Adit()
 	if err != nil {
 		t.Errorf("Error in Adit with noAdit true: %v", err)
 	}
@@ -80,6 +81,7 @@ type MockBrowserWithNoAdit struct{}
 func (m *MockBrowserWithNoAdit) Open(url string) error {
 	return nil
 }
+func (m *MockBrowserWithNoAdit) Close() {}
 func (m *MockBrowserWithNoAdit) Submit(postData map[string]string, submitBtnClass string) error {
 	return nil
 }
@@ -89,4 +91,3 @@ func (m *MockBrowserWithNoAdit) GetElementValueByID(id string) (string, error) {
 func (m *MockBrowserWithNoAdit) ClickElementByID(id string) error {
 	return fmt.Errorf("ClickElementByID should not be called when noAdit is true")
 }
-func (m *MockBrowserWithNoAdit) Close() {}

@@ -22,11 +22,12 @@ var aditCmd = &cobra.Command{
 	Short: "Clocked in/out with Jobcan",
 	Long:  `Clocked in/out with Jobcan, then send message to Chatwork.(if you can the setting true)`,
 	Run: func(cmd *cobra.Command, args []string) {
-		// noAdit, err := cmd.Flags().GetBool("no-adit")
-		// if err != nil {
-		// 	fmt.Println("Can't read no-adit flag: ", err)
-		// 	os.Exit(1)
-		// }
+		noAdit, err := cmd.Flags().GetBool("no-adit")
+		if err != nil {
+			fmt.Println("Can't read no-adit flag: ", err)
+			os.Exit(1)
+		}
+
 		// verbose, err := cmd.Flags().GetBool("verbose")
 		// if err != nil {
 		// 	fmt.Println("Can't read verbose flag: ", err)
@@ -56,12 +57,15 @@ var aditCmd = &cobra.Command{
 		}
 
 		jobcanClient := jobcan.NewJobcanClient(browser, credentials)
+		jobcanClient.NoAdit = noAdit
+
 		chatworkClient := chatwork.NewChatworkClient(chatworkApiToken, chatworkSendMessageConfig)
 		notificationService := notification.NewNotificationService(notificationConfig, chatworkClient)
 		clockIOService := clockio.NewClockIOService(jobcanClient, notificationService)
+
 		result, err := clockIOService.Adit()
 		if err != nil {
-			fmt.Println("Failed to send to Chatwork")
+			fmt.Println(fmt.Sprintf("Failed to adit. reason: %v", err))
 			os.Exit(1)
 		}
 

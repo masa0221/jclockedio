@@ -9,8 +9,6 @@ import (
 type ClockIOService struct {
 	jobcanClient        jobcan.JobcanClient
 	notificationService NotificationService
-	noAdit              bool
-	notifyFormat        string
 }
 
 type Result struct {
@@ -27,7 +25,6 @@ func NewClockIOService(jobcanClient jobcan.JobcanClient, ns NotificationService)
 	return &ClockIOService{
 		jobcanClient:        jobcanClient,
 		notificationService: ns,
-		noAdit:              false,
 	}
 }
 
@@ -39,7 +36,7 @@ func (cs *ClockIOService) Adit() (*Result, error) {
 	}
 
 	// clock in / out
-	result, err := cs.jobcanClient.Adit(cs.noAdit)
+	result, err := cs.jobcanClient.Adit()
 	if err != nil {
 		return nil, fmt.Errorf("Failed to clock in/out: %v", err)
 	}
