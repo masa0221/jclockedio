@@ -1,9 +1,11 @@
 package notification
 
 import (
-	"fmt"
+	"errors"
 	"html/template"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type NotificationClient interface {
@@ -28,24 +30,34 @@ func NewNotificationService(config *NotificationConfig, notificationClient Notif
 }
 
 func (ns *NotificationService) Notify(clock string, beforeStatus string, afterStatus string) error {
+	log.Debug("Starting the notification process")
+
 	if ns.config.NotifyEnabled {
 		if ns.config.ClockedIOResultFormat != "" {
 			outputMessage, err := ns.generateOutputMessage(clock, beforeStatus, afterStatus)
 			if err != nil {
-				return fmt.Errorf("Failed to notify to Chatwork")
+				logMsg := "failed to generate output message for Chatwork"
+				log.Error(logMsg)
+				return errors.New(logMsg)
 			}
 
-			err = ns.chatworkClient.SendMessage(outputMessage)
-			if err != nil {
-				return fmt.Errorf("Failed to notify to Chatwork")
+			if err = ns.chatworkClient.SendMessage(outputMessage); err != nil {
+				logMsg := "failed to send message to Chatwork"
+				log.Error(logMsg)
+				return errors.New(logMsg)
 			}
 		}
+	} else {
+		log.Debug("Notification is disabled in the configuration")
 	}
 
+	log.Debug("Notification process completed successfully")
 	return nil
 }
 
 func (ns *NotificationService) generateOutputMessage(clock string, beforeStatus string, afterStatus string) (string, error) {
+	log.Debug("Generating output message format")
+
 	assignData := map[string]interface{}{
 		"clock":        clock,
 		"beforeStatus": beforeStatus,
@@ -54,12 +66,20 @@ func (ns *NotificationService) generateOutputMessage(clock string, beforeStatus 
 
 	tpl, err := template.New("notify_message").Parse(ns.config.ClockedIOResultFormat)
 	if err != nil {
-		return "", fmt.Errorf("Failed to parse output format")
-	}
-	writer := new(strings.Builder)
-	if err := tpl.Execute(writer, assignData); err != nil {
-		return "", fmt.Errorf("Failed to generate output format")
+		logMsg := "failed to parse output format template"
+		log.Error(logMsg)
+		return "", errors.New(logMsg)
 	}
 
-	return writer.String(), nil
+	writer := new(strings.Builder)
+	if err = tpl.Execute(writer, assignData); err != nil {
+		logMsg := "failed to execute template for output format"
+		log.Error(logMsg)
+		return "", errors.New(logMsg)
+	}
+
+	outputMessage := writer.String()
+	log.Debugf("Generated output message: %s", outputMessage)
+
+	return outputMessage, nil
 }

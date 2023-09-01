@@ -2,11 +2,14 @@ package chatwork
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type ChatworkClient struct {
@@ -33,6 +36,8 @@ func NewChatworkClient(token string, sendMessageConfig *ChatworkSendMessageConfi
 }
 
 func (cc *ChatworkClient) SendMessage(message string) error {
+	log.Debug("Starting to send a message to Chatwork")
+
 	endpoint := fmt.Sprintf("%v/rooms/%v/messages", cc.BaseUrl, cc.sendMessageConfig.ToRoomId)
 	self_unread := 0
 	if cc.sendMessageConfig.Unread {
@@ -42,7 +47,9 @@ func (cc *ChatworkClient) SendMessage(message string) error {
 
 	req, err := http.NewRequest("POST", endpoint, payload)
 	if err != nil {
-		return fmt.Errorf("Failed to create request: %s", err)
+		logMsg := fmt.Sprintf("Failed to create request: %s", err)
+		log.Error(logMsg)
+		return errors.New(logMsg)
 	}
 
 	req.Header.Add("Accept", "application/json")
@@ -51,27 +58,38 @@ func (cc *ChatworkClient) SendMessage(message string) error {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return fmt.Errorf("Failed to request to Chatwork: %s", err)
+		logMsg := fmt.Sprintf("Failed to send request to Chatwork: %s", err)
+		log.Error(logMsg)
+		return errors.New(logMsg)
 	}
-
 	defer res.Body.Close()
+
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return fmt.Errorf("Failed to read response body of ChatworkAPI: %s", err)
+		logMsg := fmt.Sprintf("Failed to read Chatwork API response body: %s", err)
+		log.Error(logMsg)
+		return errors.New(logMsg)
 	}
+
 	if res.StatusCode >= 400 {
-		return fmt.Errorf("Bad response status code %d :%v", res.StatusCode, string(body))
+		logMsg := fmt.Sprintf("Received bad status code %d from Chatwork: %s", res.StatusCode, body)
+		log.Error(logMsg)
+		return errors.New(logMsg)
 	}
 
 	result := postMessageResult{}
-	err = json.Unmarshal([]byte(string(body)), &result)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal from response body. err: %s", err)
+	if err = json.Unmarshal([]byte(string(body)), &result); err != nil {
+		logMsg := fmt.Sprintf("Failed to unmarshal Chatwork response body: %s", err)
+		log.Error(logMsg)
+		return errors.New(logMsg)
 	}
 
+	log.Debug("Message sent successfully to Chatwork")
 	return nil
 }
 
 func (cc *ChatworkClient) generateChatworkMessageUrl(messageId string) string {
-	return fmt.Sprintf("https://www.chatwork.com/#!rid%v-%v", cc.sendMessageConfig.ToRoomId, messageId)
+	url := fmt.Sprintf("https://www.chatwork.com/#!rid%v-%v", cc.sendMessageConfig.ToRoomId, messageId)
+	log.Debugf("Generated Chatwork message URL: %s", url)
+	return url
 }

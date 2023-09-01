@@ -5,15 +5,14 @@ Copyright © 2022 Masashi Tsuru
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/masa0221/jclockedio/pkg/client/chatwork"
 	"github.com/masa0221/jclockedio/pkg/client/jobcan"
 	"github.com/masa0221/jclockedio/pkg/client/jobcan/browser"
 	"github.com/masa0221/jclockedio/pkg/service/clockio"
 	"github.com/masa0221/jclockedio/pkg/service/notification"
 	"github.com/spf13/cobra"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // aditCmd represents the adit command
@@ -22,23 +21,28 @@ var aditCmd = &cobra.Command{
 	Short: "Clocked in/out with Jobcan",
 	Long:  `Clocked in/out with Jobcan, then send message to Chatwork.(if you can the setting true)`,
 	Run: func(cmd *cobra.Command, args []string) {
+		log.SetFormatter(&log.TextFormatter{
+			FullTimestamp: true,
+			ForceColors:   true,
+		})
+
 		noAdit, err := cmd.Flags().GetBool("no-adit")
 		if err != nil {
-			fmt.Println("Can't read no-adit flag: ", err)
-			os.Exit(1)
+			log.Errorf("Can't read no-adit flag: ", err)
 		}
 
-		// verbose, err := cmd.Flags().GetBool("verbose")
-		// if err != nil {
-		// 	fmt.Println("Can't read verbose flag: ", err)
-		// 	os.Exit(1)
-		// }
+		verbose, err := cmd.Flags().GetBool("verbose")
+		if err != nil {
+			log.Errorf("Can't read verbose flag: ", err)
+		}
+		if verbose {
+			log.SetLevel(log.DebugLevel)
+		}
 
 		// Clocked in/out
 		browser, err := browser.NewAgoutiBrowser()
 		if err != nil {
-			fmt.Println("Can't launch a browser: ", err)
-			os.Exit(1)
+			log.Errorf("Can't launch a browser: ", err)
 		}
 		defer browser.Close()
 
@@ -65,11 +69,10 @@ var aditCmd = &cobra.Command{
 
 		result, err := clockIOService.Adit()
 		if err != nil {
-			fmt.Println(fmt.Sprintf("Failed to adit. reason: %v", err))
-			os.Exit(1)
+			log.Errorf("Failed to adit. reason: %v", err)
 		}
 
-		fmt.Println(result)
+		log.Info(result)
 	},
 }
 
