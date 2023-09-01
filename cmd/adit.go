@@ -46,33 +46,38 @@ var aditCmd = &cobra.Command{
 		}
 		defer browser.Close()
 
+		// Jobcan client
 		credentials := &jobcan.JobcanCredentials{
 			Email:    config.Jobcan.Email,
 			Password: config.Jobcan.Password,
 		}
-		notificationConfig := &notification.NotificationConfig{
-			NotifyEnabled:         config.Chatwork.Send,
-			ClockedIOResultFormat: config.Output.Format,
-		}
+		jobcanClient := jobcan.NewJobcanClient(browser, credentials)
+		jobcanClient.NoAdit = noAdit
+
+		// Chatwork client
 		chatworkApiToken := config.Chatwork.ApiToken
 		chatworkSendMessageConfig := &chatwork.ChatworkSendMessageConfig{
 			ToRoomId: config.Chatwork.RoomId,
 			Unread:   false,
 		}
-
-		jobcanClient := jobcan.NewJobcanClient(browser, credentials)
-		jobcanClient.NoAdit = noAdit
-
 		chatworkClient := chatwork.NewChatworkClient(chatworkApiToken, chatworkSendMessageConfig)
-		notificationService := notification.NewNotificationService(notificationConfig, chatworkClient)
-		clockIOService := clockio.NewClockIOService(jobcanClient, notificationService)
 
+		// notification
+		notificationService := notification.NewNotificationService(chatworkClient)
+
+		// clocked in / out
+		clockIOConfig := &clockio.Config{
+			NotifyEnabled:         config.Chatwork.Send,
+			ClockedIOResultFormat: config.Output.Format,
+		}
+		clockIOService := clockio.NewClockIOService(jobcanClient, notificationService, clockIOConfig)
 		result, err := clockIOService.Adit()
 		if err != nil {
 			log.Errorf("Failed to adit. reason: %v", err)
 		}
 
-		log.Info(result)
+		// output
+		log.Infof("[%s] %s -> %s", result.Clock, result.BeforeWorkingStatus, result.AfterWorkingStatus)
 	},
 }
 

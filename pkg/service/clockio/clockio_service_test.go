@@ -1,6 +1,7 @@
 package clockio_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/masa0221/jclockedio/pkg/client/jobcan"
@@ -9,8 +10,12 @@ import (
 
 func TestAdit(t *testing.T) {
 	mockJobcanClient := &MockJobcanClient{}
-	mockNotificationService := &MockNotificationService{}
-	service := clockio.NewClockIOService(mockJobcanClient, mockNotificationService)
+	mockNotificationService := &MockNotificationService{t: t}
+	mockConfig := &clockio.Config{
+		NotifyEnabled:         true,
+		ClockedIOResultFormat: "{{.clock}}: {{.beforeStatus}} -> {{.afterStatus}}",
+	}
+	service := clockio.NewClockIOService(mockJobcanClient, mockNotificationService, mockConfig)
 
 	result, err := service.Adit()
 	if err != nil {
@@ -50,8 +55,33 @@ func (m *MockJobcanClient) Adit() (*jobcan.AditResult, error) {
 	}, nil
 }
 
-type MockNotificationService struct{}
+type MockNotificationService struct {
+	t *testing.T
+}
 
-func (m *MockNotificationService) Notify(clock string, beforeStatus string, afterStatus string) error {
+func (m *MockNotificationService) Notify(message string) error {
+	expected := "12:00: IN -> OUT"
+	if message != expected {
+		m.t.Errorf("Expected message is \"%s\" but got \"%s\"", expected, message)
+	}
+
 	return nil
+}
+
+func TestNoAdit(t *testing.T) {
+	mockJobcanClient := &MockJobcanClient{}
+	mockNotificationService := &MockFailNotificationService{}
+	mockConfig := &clockio.Config{NotifyEnabled: false}
+	service := clockio.NewClockIOService(mockJobcanClient, mockNotificationService, mockConfig)
+
+	if _, err := service.Adit(); err != nil {
+		t.Error("Expected to execute Notify process, but it was actually executed")
+	}
+}
+
+type MockFailNotificationService struct {
+}
+
+func (m *MockFailNotificationService) Notify(message string) error {
+	return errors.New("Notify is executed")
 }

@@ -1,32 +1,26 @@
 package notification_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/masa0221/jclockedio/pkg/service/notification"
 )
 
 func TestNotify(t *testing.T) {
-	mockClient := &MockClient{}
-	config := &notification.NotificationConfig{
-		NotifyEnabled:         true,
-		ClockedIOResultFormat: "{{.clock}}: {{.beforeStatus}} -> {{.afterStatus}}",
-	}
-	service := notification.NewNotificationService(config, mockClient)
+	mockClient := &MockClient{t: t}
+	service := notification.NewNotificationService(mockClient)
 
-	err := service.Notify("12:00", "IN", "OUT")
-	if err != nil {
-		t.Errorf("Error notifying: %v", err)
-	}
+	service.Notify("12:00: IN -> OUT")
 }
 
-type MockClient struct{}
+type MockClient struct {
+	t *testing.T
+}
 
 func (m *MockClient) SendMessage(message string) error {
 	expected := "12:00: IN -> OUT"
 	if message != expected {
-		return fmt.Errorf("Expected %s but got %s", expected, message)
+		m.t.Errorf("Expected \"%s\" but got \"%s\"", expected, message)
 	}
 	return nil
 }
