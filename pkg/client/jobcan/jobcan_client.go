@@ -43,7 +43,7 @@ func NewJobcanClient(b Browser, credentials *JobcanCredentials) *DefaultJobcanCl
 	return &DefaultJobcanClient{
 		browser:     b,
 		credentials: credentials,
-		BaseUrl:     "",
+		BaseUrl:     "https://ssl.jobcan.jp",
 		NoAdit:      false,
 	}
 }
