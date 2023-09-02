@@ -145,7 +145,7 @@ func (jc *DefaultJobcanClient) fetchAfterStatus(beforeStatus string, retry int) 
 	if beforeStatus != afterStatus || retry <= 0 {
 		return afterStatus, nil
 	}
-	time.Sleep(3 * time.Second)
+	time.Sleep(2 * time.Second)
 
 	return jc.fetchAfterStatus(beforeStatus, retry-1)
 }

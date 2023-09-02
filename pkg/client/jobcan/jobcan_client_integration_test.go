@@ -10,13 +10,78 @@ import (
 	"github.com/masa0221/jclockedio/pkg/client/jobcan/browser"
 )
 
-func TestJobcanClient(t *testing.T) {
-	wantUserEmail := "test@example.com"
-	wantUserPassword := "dummy-password"
-	wantBeforeWorkingStatus := "Not attending work"
-	wantAfterWorkingStatus := "Working"
-	wantClock := "12:23:34"
+var wantUserEmail = "test@example.com"
+var wantUserPassword = "dummy-password"
+var wantBeforeWorkingStatus = "Not attending work"
+var wantAfterWorkingStatus = "Working"
+var wantClock = "12:23:34"
 
+func TestJobcanClient(t *testing.T) {
+
+	setUpTestServer(t, func(t *testing.T, testServer *httptest.Server) {
+		browser, err := setupBrowser(t)
+		if err != nil {
+			t.Errorf("Error in NewAgoutiBrowser: %v", err)
+		}
+		defer browser.Close()
+
+		client := jobcan.NewJobcanClient(browser, &jobcan.JobcanCredentials{Email: wantUserEmail, Password: wantUserPassword})
+		client.BaseUrl = testServer.URL
+
+		// Login
+		err = client.Login()
+		if err != nil {
+			t.Errorf("Error in Login: %v", err)
+		}
+
+		// Do adit
+		aditResult, err := client.Adit()
+		if err != nil {
+			t.Errorf("Error in Adit: %v", err)
+		}
+		assertEquals(t, aditResult.BeforeWorkingStatus, wantBeforeWorkingStatus, "check before working status(do not adit)")
+		assertEquals(t, aditResult.AfterWorkingStatus, wantAfterWorkingStatus, "check after working status(do not adit)")
+		assertEquals(t, aditResult.Clock, wantClock, "check clock(do not adit)")
+	})
+}
+
+func TestJobcanClientWithNoAdit(t *testing.T) {
+
+	setUpTestServer(t, func(t *testing.T, testServer *httptest.Server) {
+		browser, err := setupBrowser(t)
+		if err != nil {
+			t.Errorf("Error in NewAgoutiBrowser: %v", err)
+		}
+		defer browser.Close()
+
+		client := jobcan.NewJobcanClient(browser, &jobcan.JobcanCredentials{Email: wantUserEmail, Password: wantUserPassword})
+		client.BaseUrl = testServer.URL
+
+		// Login
+		err = client.Login()
+		if err != nil {
+			t.Errorf("Error in Login: %v", err)
+		}
+
+		// Do not adit
+		client.NoAdit = true
+		aditResult, err := client.Adit()
+		if err != nil {
+			t.Errorf("Error in Adit: %v", err)
+		}
+		assertEquals(t, aditResult.BeforeWorkingStatus, wantBeforeWorkingStatus, "check before working status(do not adit)")
+		assertEquals(t, aditResult.AfterWorkingStatus, wantBeforeWorkingStatus, "check after working status(do not adit)")
+		assertEquals(t, aditResult.Clock, wantClock, "check clock(do not adit)")
+	})
+}
+
+func setUpTestServer(t *testing.T, testFunc func(t *testing.T, testServer *httptest.Server)) {
+	testServer := httptest.NewServer(setupHandler(t))
+	defer testServer.Close()
+	testFunc(t, testServer)
+}
+
+func setupHandler(t *testing.T) http.HandlerFunc {
 	jobcanLoginPageHtml := `
 	<html><body>
 	  <form action="/users/sign_in" method="post">
@@ -43,7 +108,7 @@ func TestJobcanClient(t *testing.T) {
 	</script>
 	</html>`, wantBeforeWorkingStatus, wantClock, wantAfterWorkingStatus)
 
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" && r.URL.Path == "/jbcoauth/login" {
 			fmt.Fprintln(w, jobcanLoginPageHtml)
 		}
@@ -63,44 +128,19 @@ func TestJobcanClient(t *testing.T) {
 		if r.URL.Path == "/employee" {
 			fmt.Fprintln(w, jobcanAditPageHtml)
 		}
-	})
+	}
+}
 
-	testServer := httptest.NewServer(handler)
-	defer testServer.Close()
-
+func setupBrowser(t *testing.T) (*browser.AgoutiBrowser, error) {
 	browser, err := browser.NewAgoutiBrowser()
-	defer browser.Close()
+	assertNoError(t, err, "Error in NewAgoutiBrowser")
+	return browser, err
+}
 
+func assertNoError(t *testing.T, err error, msg string) {
 	if err != nil {
-		t.Errorf("Error in NewAgoutiBrowser: %v", err)
+		t.Errorf("%s: %v", msg, err)
 	}
-	client := jobcan.NewJobcanClient(browser, &jobcan.JobcanCredentials{Email: wantUserEmail, Password: wantUserPassword})
-	client.BaseUrl = testServer.URL
-
-	err = client.Login()
-	if err != nil {
-		t.Errorf("Error in Login: %v", err)
-	}
-
-	// Do not adit
-	client.NoAdit = true
-	aditResult, err := client.Adit()
-	if err != nil {
-		t.Errorf("Error in Adit: %v", err)
-	}
-	assertEquals(t, aditResult.BeforeWorkingStatus, wantBeforeWorkingStatus, "check before working status(do not adit)")
-	assertEquals(t, aditResult.AfterWorkingStatus, wantBeforeWorkingStatus, "check after working status(do not adit)")
-	assertEquals(t, aditResult.Clock, wantClock, "check clock(do not adit)")
-
-	// // Do adit
-	aditResult, err = client.Adit()
-	if err != nil {
-		t.Errorf("Error in Adit: %v", err)
-	}
-	assertEquals(t, aditResult.BeforeWorkingStatus, wantBeforeWorkingStatus, "check before working status(do not adit)")
-	assertEquals(t, aditResult.AfterWorkingStatus, wantAfterWorkingStatus, "check after working status(do not adit)")
-	assertEquals(t, aditResult.Clock, wantClock, "check clock(do not adit)")
-	assertEquals(t, "", "", "check clock(do not adit)")
 }
 
 func assertEquals(t *testing.T, got interface{}, want interface{}, description string) {
