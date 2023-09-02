@@ -28,12 +28,12 @@ var aditCmd = &cobra.Command{
 
 		noAdit, err := cmd.Flags().GetBool("no-adit")
 		if err != nil {
-			log.Errorf("Can't read no-adit flag: ", err)
+			log.Fatalf("Can't read no-adit flag: %v", err)
 		}
 
 		verbose, err := cmd.Flags().GetBool("verbose")
 		if err != nil {
-			log.Errorf("Can't read verbose flag: ", err)
+			log.Fatalf("Can't read verbose flag: %v", err)
 		}
 		if verbose {
 			log.SetLevel(log.DebugLevel)
@@ -42,7 +42,7 @@ var aditCmd = &cobra.Command{
 		// Clocked in/out
 		browser, err := browser.NewAgoutiBrowser()
 		if err != nil {
-			log.Errorf("Can't launch a browser: ", err)
+			log.Fatalf("Can't launch a browser: %v", err)
 		}
 		defer browser.Close()
 
