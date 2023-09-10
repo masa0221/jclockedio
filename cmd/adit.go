@@ -5,11 +5,11 @@ Copyright © 2022 Masashi Tsuru
 package cmd
 
 import (
-	"github.com/masa0221/jclockedio/pkg/client/chatwork"
 	"github.com/masa0221/jclockedio/pkg/client/jobcan"
 	"github.com/masa0221/jclockedio/pkg/client/jobcan/browser"
+	"github.com/masa0221/jclockedio/pkg/logger/chatwork_logger"
 	"github.com/masa0221/jclockedio/pkg/service/clockio"
-	"github.com/masa0221/jclockedio/pkg/service/notification"
+	"github.com/masa0221/jclockedio/pkg/service/logging"
 	"github.com/spf13/cobra"
 
 	log "github.com/sirupsen/logrus"
@@ -54,23 +54,23 @@ var aditCmd = &cobra.Command{
 		jobcanClient := jobcan.NewJobcanClient(browser, credentials)
 		jobcanClient.NoAdit = noAdit
 
-		// Chatwork client
-		chatworkApiToken := config.Chatwork.ApiToken
-		chatworkSendMessageConfig := &chatwork.ChatworkSendMessageConfig{
-			ToRoomId: config.Chatwork.RoomId,
-			Unread:   false,
-		}
-		chatworkClient := chatwork.NewChatworkClient(chatworkApiToken, chatworkSendMessageConfig)
+		// Chatwork logger
+		chatworkLogger := chatwork_logger.NewChatworkLogger(
+			config.Chatwork.ApiToken,
+			&chatwork_logger.Config{
+				ToRoomId: config.Chatwork.RoomId,
+				Unread:   false,
+			})
 
-		// notification
-		notificationService := notification.NewNotificationService(chatworkClient)
+		// logging service
+		loggingService := logging.NewLoggingService(chatworkLogger)
 
 		// clocked in / out
 		clockIOConfig := &clockio.Config{
-			NotifyEnabled:         config.Chatwork.Send,
+			LoggingEnabled:        config.Chatwork.Send,
 			ClockedIOResultFormat: config.Output.Format,
 		}
-		clockIOService := clockio.NewClockIOService(jobcanClient, notificationService, clockIOConfig)
+		clockIOService := clockio.NewClockIOService(jobcanClient, loggingService, clockIOConfig)
 		result, err := clockIOService.Adit()
 		if err != nil {
 			log.Errorf("Failed to adit. reason: %v", err)

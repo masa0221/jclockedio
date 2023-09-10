@@ -1,14 +1,14 @@
-package chatwork_test
+package chatwork_logger_test
 
 import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
-	"github.com/masa0221/jclockedio/pkg/client/chatwork"
+	logger "github.com/masa0221/jclockedio/pkg/logger/chatwork_logger"
 )
 
-func TestSendMessage(t *testing.T) {
+func TestLog(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -16,32 +16,32 @@ func TestSendMessage(t *testing.T) {
 	}))
 	defer server.Close()
 
-	config := &chatwork.ChatworkSendMessageConfig{
+	config := &logger.Config{
 		ToRoomId: "1001",
 		Unread:   true,
 	}
-	client := chatwork.NewChatworkClient("apiToken", config)
-	client.BaseUrl = server.URL // サーバのURLをクライアントにセット
+	client := logger.NewChatworkLogger("apiToken", config)
+	client.BaseUrl = server.URL
 
-	if err := client.SendMessage("Hello, Chatwork!"); err != nil {
+	if err := client.Log("Hello, logger!"); err != nil {
 		t.Fatalf("Expected no error, but got %v", err)
 	}
 }
 
-func TestSendMessage_Failure(t *testing.T) {
+func TestLog_Failure(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}))
 	defer server.Close()
 
-	config := &chatwork.ChatworkSendMessageConfig{
+	config := &logger.Config{
 		ToRoomId: "1001",
 		Unread:   true,
 	}
-	client := chatwork.NewChatworkClient("apiToken", config)
+	client := logger.NewChatworkLogger("apiToken", config)
 	client.BaseUrl = server.URL
 
-	if err := client.SendMessage("Hello, Chatwork!"); err == nil {
+	if err := client.Log("Hello, logger!"); err == nil {
 		t.Fatalf("Expected an error, but got nil")
 	}
 }

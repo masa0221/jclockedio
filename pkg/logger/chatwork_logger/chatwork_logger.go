@@ -1,4 +1,4 @@
-package chatwork
+package chatwork_logger
 
 import (
 	"encoding/json"
@@ -12,13 +12,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type ChatworkClient struct {
-	BaseUrl           string
-	apiToken          string
-	sendMessageConfig *ChatworkSendMessageConfig
+type ChatworkLogger struct {
+	BaseUrl  string
+	apiToken string
+	config   *Config
 }
 
-type ChatworkSendMessageConfig struct {
+type Config struct {
 	ToRoomId string
 	Unread   bool
 }
@@ -27,20 +27,24 @@ type postMessageResult struct {
 	MessageId string `json:"message_id"`
 }
 
-func NewChatworkClient(token string, sendMessageConfig *ChatworkSendMessageConfig) *ChatworkClient {
-	return &ChatworkClient{
-		BaseUrl:           "https://api.chatwork.com/v2",
-		sendMessageConfig: sendMessageConfig,
-		apiToken:          token,
+func NewChatworkLogger(token string, config *Config) *ChatworkLogger {
+	return &ChatworkLogger{
+		BaseUrl:  "https://api.chatwork.com/v2",
+		config:   config,
+		apiToken: token,
 	}
 }
 
-func (cc *ChatworkClient) SendMessage(message string) error {
+func (cl *ChatworkLogger) Name() string {
+	return "Chatwork"
+}
+
+func (cl *ChatworkLogger) Log(message string) error {
 	log.Debug("Starting to send a message to Chatwork")
 
-	endpoint := fmt.Sprintf("%v/rooms/%v/messages", cc.BaseUrl, cc.sendMessageConfig.ToRoomId)
+	endpoint := fmt.Sprintf("%v/rooms/%v/messages", cl.BaseUrl, cl.config.ToRoomId)
 	self_unread := 0
-	if cc.sendMessageConfig.Unread {
+	if cl.config.Unread {
 		self_unread = 1
 	}
 	payload := strings.NewReader(fmt.Sprintf("self_unread=%v&body=%v", self_unread, url.QueryEscape(message)))
@@ -52,9 +56,9 @@ func (cc *ChatworkClient) SendMessage(message string) error {
 		return errors.New(logMsg)
 	}
 
-	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Aclept", "application/json")
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Add("X-ChatWorkToken", cc.apiToken)
+	req.Header.Add("X-ChatWorkToken", cl.apiToken)
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -84,12 +88,12 @@ func (cc *ChatworkClient) SendMessage(message string) error {
 		return errors.New(logMsg)
 	}
 
-	log.Debug("Message sent successfully to Chatwork")
+	log.Debugf("Message sent suceessfully to Chatwork on %v", cl.generateChatworkMessageUrl(result.MessageId))
 	return nil
 }
 
-func (cc *ChatworkClient) generateChatworkMessageUrl(messageId string) string {
-	url := fmt.Sprintf("https://www.chatwork.com/#!rid%v-%v", cc.sendMessageConfig.ToRoomId, messageId)
+func (cl *ChatworkLogger) generateChatworkMessageUrl(messageId string) string {
+	url := fmt.Sprintf("https://www.chatwork.com/#!rid%v-%v", cl.config.ToRoomId, messageId)
 	log.Debugf("Generated Chatwork message URL: %s", url)
 	return url
 }

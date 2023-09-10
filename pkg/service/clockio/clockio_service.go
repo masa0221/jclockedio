@@ -11,13 +11,13 @@ import (
 )
 
 type ClockIOService struct {
-	jobcanClient        jobcan.JobcanClient
-	notificationService NotificationService
-	config              *Config
+	jobcanClient   jobcan.JobcanClient
+	loggingService LoggingService
+	config         *Config
 }
 
 type Config struct {
-	NotifyEnabled         bool
+	LoggingEnabled        bool
 	ClockedIOResultFormat string
 }
 
@@ -27,15 +27,15 @@ type Result struct {
 	Clock               string
 }
 
-type NotificationService interface {
-	Notify(message string) error
+type LoggingService interface {
+	Broadcast(message string) error
 }
 
-func NewClockIOService(jobcanClient jobcan.JobcanClient, ns NotificationService, config *Config) *ClockIOService {
+func NewClockIOService(jobcanClient jobcan.JobcanClient, ns LoggingService, config *Config) *ClockIOService {
 	return &ClockIOService{
-		jobcanClient:        jobcanClient,
-		notificationService: ns,
-		config:              config,
+		jobcanClient:   jobcanClient,
+		loggingService: ns,
+		config:         config,
 	}
 }
 
@@ -69,18 +69,18 @@ func (cs *ClockIOService) Adit() (*Result, error) {
 	}
 	log.Debugf("Successfully generate message: %v", message)
 
-	// notify
+	// logging
 	log.Debug("Start notification process")
-	if cs.config.NotifyEnabled {
-		err = cs.notificationService.Notify(message)
+	if cs.config.LoggingEnabled {
+		err = cs.loggingService.Broadcast(message)
 		if err != nil {
-			logMsg := fmt.Sprintf("failed to notify the messaging services. err: %v", err)
+			logMsg := fmt.Sprintf("failed to log. err: %v", err)
 			log.Error(logMsg)
 			return nil, errors.New(logMsg)
 		}
-		log.Debug("Notification sent successfully")
+		log.Debug("Logging sent successfully")
 	} else {
-		log.Debug("Notification is disabled in the configuration")
+		log.Debug("Logging is disabled in the configuration")
 	}
 
 	return &Result{

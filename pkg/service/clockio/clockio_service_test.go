@@ -10,31 +10,31 @@ import (
 
 func TestAdit(t *testing.T) {
 	mockJobcanClient := &MockJobcanClient{}
-	mockNotificationService := &MockNotificationService{t: t}
+	mockLoggingService := &MockLoggingService{t: t}
 	mockConfig := &clockio.Config{
-		NotifyEnabled:         true,
+		LoggingEnabled:        true,
 		ClockedIOResultFormat: "{{.clock}}: {{.beforeStatus}} -> {{.afterStatus}}",
 	}
-	service := clockio.NewClockIOService(mockJobcanClient, mockNotificationService, mockConfig)
+	service := clockio.NewClockIOService(mockJobcanClient, mockLoggingService, mockConfig)
 
 	result, err := service.Adit()
 	if err != nil {
 		t.Errorf("Error in Adit: %v", err)
 	}
 
-	// Clockのテスト
+	// testing Clock
 	expectedClock := "12:00"
 	if result.Clock != expectedClock {
 		t.Errorf("Expected clock %s but got %s", expectedClock, result.Clock)
 	}
 
-	// BeforeWorkingStatusのテスト
+	// testing BeforeWorkingStatus
 	expectedBeforeStatus := "IN"
 	if result.BeforeWorkingStatus != expectedBeforeStatus {
 		t.Errorf("Expected before status %s but got %s", expectedBeforeStatus, result.BeforeWorkingStatus)
 	}
 
-	// AfterWorkingStatusのテスト
+	// testing AfterWorkingStatus
 	expectedAfterStatus := "OUT"
 	if result.AfterWorkingStatus != expectedAfterStatus {
 		t.Errorf("Expected after status %s but got %s", expectedAfterStatus, result.AfterWorkingStatus)
@@ -55,11 +55,11 @@ func (m *MockJobcanClient) Adit() (*jobcan.AditResult, error) {
 	}, nil
 }
 
-type MockNotificationService struct {
+type MockLoggingService struct {
 	t *testing.T
 }
 
-func (m *MockNotificationService) Notify(message string) error {
+func (m *MockLoggingService) Broadcast(message string) error {
 	expected := "12:00: IN -> OUT"
 	if message != expected {
 		m.t.Errorf("Expected message is \"%s\" but got \"%s\"", expected, message)
@@ -70,18 +70,18 @@ func (m *MockNotificationService) Notify(message string) error {
 
 func TestNoAdit(t *testing.T) {
 	mockJobcanClient := &MockJobcanClient{}
-	mockNotificationService := &MockFailNotificationService{}
-	mockConfig := &clockio.Config{NotifyEnabled: false}
-	service := clockio.NewClockIOService(mockJobcanClient, mockNotificationService, mockConfig)
+	mockLoggingService := &MockFailLoggingService{}
+	mockConfig := &clockio.Config{LoggingEnabled: false}
+	service := clockio.NewClockIOService(mockJobcanClient, mockLoggingService, mockConfig)
 
 	if _, err := service.Adit(); err != nil {
-		t.Error("Expected to execute Notify process, but it was actually executed")
+		t.Error("Expected to execute Log process, but it was actually executed")
 	}
 }
 
-type MockFailNotificationService struct {
+type MockFailLoggingService struct {
 }
 
-func (m *MockFailNotificationService) Notify(message string) error {
-	return errors.New("Notify is executed")
+func (m *MockFailLoggingService) Broadcast(message string) error {
+	return errors.New("Log is executed")
 }
