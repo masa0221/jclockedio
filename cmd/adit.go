@@ -8,6 +8,7 @@ import (
 	"github.com/masa0221/jclockedio/pkg/client/jobcan"
 	"github.com/masa0221/jclockedio/pkg/client/jobcan/browser"
 	"github.com/masa0221/jclockedio/pkg/logger/chatwork_logger"
+	"github.com/masa0221/jclockedio/pkg/logger/stdout_logger"
 	"github.com/masa0221/jclockedio/pkg/service/clockio"
 	"github.com/masa0221/jclockedio/pkg/service/logging"
 	"github.com/spf13/cobra"
@@ -54,16 +55,20 @@ var aditCmd = &cobra.Command{
 		jobcanClient := jobcan.NewJobcanClient(browser, credentials)
 		jobcanClient.NoAdit = noAdit
 
-		// Chatwork logger
+		// logger
 		chatworkLogger := chatwork_logger.NewChatworkLogger(
 			config.Chatwork.ApiToken,
 			&chatwork_logger.Config{
 				ToRoomId: config.Chatwork.RoomId,
 				Unread:   false,
 			})
+		stdoutLogger := stdout_logger.NewStdoutLogger()
 
 		// logging service
-		loggingService := logging.NewLoggingService(chatworkLogger)
+		loggingService := logging.NewLoggingService(
+			chatworkLogger,
+			stdoutLogger,
+		)
 
 		// clocked in / out
 		clockIOConfig := &clockio.Config{
@@ -77,7 +82,7 @@ var aditCmd = &cobra.Command{
 		}
 
 		// output
-		log.Infof("[%s] %s -> %s", result.Clock, result.BeforeWorkingStatus, result.AfterWorkingStatus)
+		log.Debugf("[%s] %s -> %s", result.Clock, result.BeforeWorkingStatus, result.AfterWorkingStatus)
 	},
 }
 
