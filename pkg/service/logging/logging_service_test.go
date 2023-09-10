@@ -8,7 +8,7 @@ import (
 
 func TestBroadcast(t *testing.T) {
 	mockLogger := &MockLogger{t: t}
-	service := logging.NewLoggingService(mockLogger)
+	service := logging.NewLoggingService(mockLogger, mockLogger)
 
 	service.Broadcast("12:00: IN -> OUT")
 }
