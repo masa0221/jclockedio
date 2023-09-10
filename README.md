@@ -1,73 +1,54 @@
-This is a things for clocked in/out to Jobcan, then it results are send to Chatwork.
+This utility is for clocking in and out on Jobcan, and it sends the results to Chatwork.
 
 "jclockedio" means Jobcan clocked in/out.
 
-## Install
-for macOS
-```
+## Installation
+### macOS
+```shell
 brew tap masa0221/tap
 ```
 
-```
+```shell
 brew install jclockedio
 ```
 
-Unfortunatry, jclockedio depends chrome and chromedriver.  
-Please execute below and install Chrome.
-```
+Note: jclockedio requires Chrome and Chromedriver.
+```shell
 brew install --cask chromedriver
 ```
-If you cannot forgive, can choose to use docker.
+Alternatively, you can use Docker.
 
 
-## How to use
-### 1. Configure
-```
+## Usage
+### 1. Configuration
+```shell
 jclockedio configure
 ```
-You can change output format.  
-Please check the help.
+You can modify the output format. For more details, run `jclockedio configure --help`.
 
 
-### 2. Clocked in / out
-```
+### 2. Clocking in / out
+```shell
 jclockedio adit
 ```
-IF YOU WANT TO CONFIRM IT CAN BE LOGIN ONLY, YOU CAN USE `--no-adit` OPTION.
+To only verify login without clocking in/out, use the `--no-adit` option.
 
 
-## Use docker
-jclockedio depends on chrome and chromedriver.  
-If you do not install those software on host machine, you can clocked in/out on docker.
+## Docker Usage
+If you don't have Chrome and Chromedriver installed, you can use Docker. To pull the Docker image, check [this link](https://github.com/masa0221/jclockedio/pkgs/container/jclockedio).
 
-See also [this](https://github.com/masa0221/jclockedio/pkgs/container/jclockedio).
-
-### 1. Build image
-```
+```shell
 docker build -t jclockedio .
-```
-
-### 2. Run container
-Execute clocked in/out on Jobcan.
-```
 docker run --rm -it jclockedio
 ```
-Default timezone is `Asia/Tokyo`.
+Default timezone is Asia/Tokyo;to change it, use `-e TZ=UTC`.
 
-You want to set other timezone, specifiy -e option.
-```
-docker run --rm -it -e TZ=UTC jclockedio
-```
-
-#### For example
-It can be specified settings files, like below.
-```
+### Example
+```shell
 docker run --rm -it -v "$HOME"/.jclockedio:/root/.jclockedio jclockedio configure
 ```
 
 
-## NOTE
-IF YOU CLOUDN'T CLOCKED IN/OUT, I CAN'T HAVE ANY RESPONSIBIRITY.  
-YOU MUST CONFIRM THIS EXECUTION PROCESS AND EXECUTED RESULTS, IF YOU WANT TO USE IT.  
-I WISH YOU GOOD LUCK FOR YOUR REMOTE WORK!🌸   
-
+## Disclaimer
+USE AT YOUR OWN RISK. Make sure to verify the execution process and the results before relying on it.
+Good luck with your remote work!🌸   
