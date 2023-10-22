@@ -5,14 +5,15 @@ Copyright © 2022 Masashi Tsuru
 package cmd
 
 import (
-	"fmt"
-	"os"
-	"strings"
-	"text/template"
-
-	"github.com/masa0221/jclockedio/internal/chatwork"
-	"github.com/masa0221/jclockedio/internal/jobcan"
+	"github.com/masa0221/jclockedio/pkg/client/jobcan"
+	"github.com/masa0221/jclockedio/pkg/client/jobcan/browser"
+	"github.com/masa0221/jclockedio/pkg/logger/chatwork_logger"
+	"github.com/masa0221/jclockedio/pkg/logger/stdout_logger"
+	"github.com/masa0221/jclockedio/pkg/service/clockio"
+	"github.com/masa0221/jclockedio/pkg/service/logging"
 	"github.com/spf13/cobra"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // aditCmd represents the adit command
@@ -21,65 +22,71 @@ var aditCmd = &cobra.Command{
 	Short: "Clocked in/out with Jobcan",
 	Long:  `Clocked in/out with Jobcan, then send message to Chatwork.(if you can the setting true)`,
 	Run: func(cmd *cobra.Command, args []string) {
+		log.SetFormatter(&log.TextFormatter{
+			FullTimestamp: true,
+			ForceColors:   true,
+		})
+
 		noAdit, err := cmd.Flags().GetBool("no-adit")
 		if err != nil {
-			fmt.Println("Can't read no-adit flag: ", err)
-			os.Exit(1)
+			log.Fatalf("Can't read no-adit flag: %v", err)
 		}
+
 		verbose, err := cmd.Flags().GetBool("verbose")
 		if err != nil {
-			fmt.Println("Can't read verbose flag: ", err)
-			os.Exit(1)
+			log.Fatalf("Can't read verbose flag: %v", err)
+		}
+		if verbose {
+			log.SetLevel(log.DebugLevel)
 		}
 
 		// Clocked in/out
-		jobcanClient := jobcan.New(config.Jobcan.Email, config.Jobcan.Password)
-		jobcanClient.Verbose = verbose
-		jobcanClient.NoAdit = noAdit
-		aditResult := jobcanClient.Adit()
-
-		// Output message
-		if config.Output.Format != "" {
-			// stdout
-			outputMessage := generateOutputMessage(config.Output.Format, aditResult.Clock, aditResult.BeforeWorkingStatus, aditResult.AfterWorkingStatus)
-			fmt.Println(outputMessage)
-
-			// Send to Chatwork
-			if config.Chatwork.Send {
-				chatworkClient := chatwork.New(config.Chatwork.ApiToken)
-				chatworkClient.Verbose = verbose
-				_, err := chatworkClient.SendMessage(outputMessage, config.Chatwork.RoomId)
-				if err != nil {
-					fmt.Println("Failed to send to Chatwork")
-					os.Exit(1)
-				}
-			}
+		browser, err := browser.NewAgoutiBrowser()
+		if err != nil {
+			log.Fatalf("Can't launch a browser: %v", err)
 		}
+		defer browser.Close()
+
+		// Jobcan client
+		credentials := &jobcan.JobcanCredentials{
+			Email:    config.Jobcan.Email,
+			Password: config.Jobcan.Password,
+		}
+		jobcanClient := jobcan.NewJobcanClient(browser, credentials)
+		jobcanClient.NoAdit = noAdit
+
+		// logger
+		chatworkLogger := chatwork_logger.NewChatworkLogger(
+			config.Chatwork.ApiToken,
+			&chatwork_logger.Config{
+				ToRoomId: config.Chatwork.RoomId,
+				Unread:   false,
+			})
+		stdoutLogger := stdout_logger.NewStdoutLogger()
+
+		// logging service
+		loggingService := logging.NewLoggingService(
+			chatworkLogger,
+			stdoutLogger,
+		)
+
+		// clocked in / out
+		clockIOConfig := &clockio.Config{
+			LoggingEnabled:        config.Chatwork.Send,
+			ClockedIOResultFormat: config.Output.Format,
+		}
+		clockIOService := clockio.NewClockIOService(jobcanClient, loggingService, clockIOConfig)
+		result, err := clockIOService.Adit()
+		if err != nil {
+			log.Errorf("Failed to adit. reason: %v", err)
+		}
+
+		// output
+		log.Debugf("[%s] %s -> %s", result.Clock, result.BeforeWorkingStatus, result.AfterWorkingStatus)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(aditCmd)
 	aditCmd.Flags().Bool("no-adit", false, "It login to Jobcan using by configure, but no adit.(The adit means to push button of clocked in/out)")
-}
-
-func generateOutputMessage(outputFormat string, clock string, beforeStatus string, afterStatus string) string {
-	assignData := map[string]interface{}{
-		"clock":        clock,
-		"beforeStatus": beforeStatus,
-		"afterStatus":  afterStatus,
-	}
-
-	tpl, err := template.New("").Parse(outputFormat)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-	writer := new(strings.Builder)
-	if err := tpl.Execute(writer, assignData); err != nil {
-		fmt.Println(err)
-		os.Exit(0)
-	}
-
-	return writer.String()
 }

@@ -20,25 +20,25 @@ var configureCmd = &cobra.Command{
 	Short: "Generate and regenerate configure file",
 	Long: `Generate and regenerate configure file
 
-Output format:
-Output format is use for adit's stdout and Chatwork message.
+Output Format:
+The output format is used for both adit's stdout and Chatwork messages.
 
-You can use variables below.
+You can use the following variables:
 ----
-{{ .clock }}           -- clock time
-{{ .beforeStatus }}    -- before clocked in/out status
-{{ .afterStatus }}     -- after clocked in/out status
+{{ .clock }}           -- Clock time
+{{ .beforeStatus }}    -- Status before clocking in/out
+{{ .afterStatus }}     -- Status after clocking in/out
 ----
-For example:
+Examples:
 
-Case1. Simple format
+Case1. Simple Format
 [{{ .clock }}] {{ .beforeStatus }} => {{ .afterStatus }}
 
-Case2. Change output format by after status
-{{ if eq .afterStatus "Working" }}I'm working now!{{ else if eq .afterStatus "Not attending work" }}I'm done today.See you tomorrow.{{ else }}Opps! Problem occured.{{ end }} at {{ .clock }}
+Case2. Vary Output Format Baseed on After Status
+{{ if eq .afterStatus "Working" }}I'm working now!{{ else if eq .afterStatus "Not attending work" }}I'm done for today.See you tomorrow.{{ else }}Oops! A problem occured{{ end }} at {{ .clock }}
 
-
-You can confirm the output by adit command specified --no-adit option.
+To verify the output, please run the following command.
+jclockedio adit --no-adit
 `,
 	Run: func(cmd *cobra.Command, args []string) {
 		configInit()
